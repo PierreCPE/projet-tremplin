@@ -5,7 +5,10 @@ models:
     description: "This model stages the yellow taxi data."
     columns:
       - name: trip_id
-        description: "ID of the trip."
+        description: "ID of the trip starting with the year_month of the table it came from."
+        tests:
+          - unique
+          - not_null
       - name: vendor_id
         description: "ID of the vendor."
       - name: pickup_datetime

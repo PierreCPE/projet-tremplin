@@ -64,8 +64,8 @@ avec comme colonnes:
     - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle.
     - **Gold Layer** : Agréger les données par type de paiement et calculer les métriques.
 3. **Analyse des Données** :
-    - **gold_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.
-    - **gold_payment_trends** : Tendances des types de paiements au fil du temps.
+    - **fct_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.
+    - **fct_payment_trends** : Tendances des types de paiements au fil du temps.
 4. **Visualisation des Résultats** : Créer des visualisations pour présenter les résultats de l'analyse.
 5. **Recommandations** : Fournir des recommandations basées sur les insights obtenus.
 

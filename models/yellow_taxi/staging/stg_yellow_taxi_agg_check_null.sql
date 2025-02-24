@@ -1,0 +1,21 @@
+SELECT
+    SUM(CASE WHEN trip_id IS NULL THEN 1 ELSE 0 END) AS trip_id_null_count,
+    SUM(CASE WHEN VendorID IS NULL THEN 1 ELSE 0 END) AS VendorID_null_count,
+    SUM(CASE WHEN tpep_pickup_datetime IS NULL THEN 1 ELSE 0 END) AS tpep_pickup_datetime_null_count,
+    SUM(CASE WHEN tpep_dropoff_datetime IS NULL THEN 1 ELSE 0 END) AS tpep_dropoff_datetime_null_count,
+    SUM(CASE WHEN passenger_count IS NULL THEN 1 ELSE 0 END) AS passenger_count_null_count,
+    SUM(CASE WHEN trip_distance IS NULL THEN 1 ELSE 0 END) AS trip_distance_null_count,
+    SUM(CASE WHEN RatecodeID IS NULL THEN 1 ELSE 0 END) AS RatecodeID_null_count,
+    SUM(CASE WHEN store_and_fwd_flag IS NULL THEN 1 ELSE 0 END) AS store_and_fwd_flag_null_count,
+    SUM(CASE WHEN PULocationID IS NULL THEN 1 ELSE 0 END) AS PULocationID_null_count,
+    SUM(CASE WHEN DOLocationID IS NULL THEN 1 ELSE 0 END) AS DOLocationID_null_count,
+    SUM(CASE WHEN payment_type IS NULL THEN 1 ELSE 0 END) AS payment_type_null_count,
+    SUM(CASE WHEN fare_amount IS NULL THEN 1 ELSE 0 END) AS fare_amount_null_count,
+    SUM(CASE WHEN extra IS NULL THEN 1 ELSE 0 END) AS extra_null_count,
+    SUM(CASE WHEN mta_tax IS NULL THEN 1 ELSE 0 END) AS mta_tax_null_count,
+    SUM(CASE WHEN tip_amount IS NULL THEN 1 ELSE 0 END) AS tip_amount_null_count,
+    SUM(CASE WHEN tolls_amount IS NULL THEN 1 ELSE 0 END) AS tolls_amount_null_count,
+    SUM(CASE WHEN improvement_surcharge IS NULL THEN 1 ELSE 0 END) AS improvement_surcharge_null_count,
+    SUM(CASE WHEN total_amount IS NULL THEN 1 ELSE 0 END) AS total_amount_null_count,
+    SUM(CASE WHEN congestion_surcharge IS NULL THEN 1 ELSE 0 END) AS congestion_surcharge_null_count
+FROM {{ ref('stg_yellow_taxi_agg') }}

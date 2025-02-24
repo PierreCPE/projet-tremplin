@@ -61,7 +61,7 @@ avec comme colonnes:
 1. **Extraction des Données** : Importer les données de BigQuery dans DBT Cloud.
 2. **Transformation des Données** :
     - **Bronze Layer** : Importer les données brutes de chaque mois.
-    - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle.
+    - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle. Suppression des valeurs nulles dans la table aggrégé.
     - **Gold Layer** : Agréger les données par type de paiement et calculer les métriques.
 3. **Analyse des Données** :
     - **fct_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.

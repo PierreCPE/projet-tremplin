@@ -86,4 +86,4 @@ FROM {{ ref('stg_yellow_taxi_agg') }}
 -- ORDER BY null_count DESC
 
 
--- On se rend compte que les valeures nulles sont sur la meme ligne donc on va les enlever lors de la concaténation des tables sources
+-- On se rend compte que les valeures nulles sont sur la meme ligne donc on va les enlever lors de la concaténation des tables sources (certainement le payment type 6 : voided trip)

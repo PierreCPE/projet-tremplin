@@ -65,7 +65,7 @@ avec comme colonnes:
     - **Gold Layer** : Agréger les données par type de paiement et calculer les métriques.
 3. **Analyse des Données** :
     - **fct_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.
-    - **fct_payment_trends** : Tendances des types de paiements au fil du temps.
+    - **fct_payment_trends** : Tendances des types de paiements au fil du temps, incluant le nombre de trajets et le montant total par type de paiement, mois et jour de la semaine.
 4. **Visualisation des Résultats** : Créer des visualisations pour présenter les résultats de l'analyse.
 5. **Recommandations** : Fournir des recommandations basées sur les insights obtenus.
 

@@ -8,7 +8,7 @@ sources:
       - name: taxi_zone_lookup
         description: Summary of taxis zones.
         columns:
-          - name: location_id
+          - name: LocationID
             description: Primary key for location.
             tests:
               - unique

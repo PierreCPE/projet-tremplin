@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_yellow_taxi_agg
+    description: "This model stages the yellow taxi data."
+    columns:
+      - name: trip_id
+        description: "ID of the trip."
+      - name: vendor_id
+        description: "ID of the vendor."
+      - name: pickup_datetime
+        description: "Date and time when the passenger was picked up."
+      - name: dropoff_datetime
+        description: "Date and time when the passenger was dropped off."
+      - name: passenger_count
+        description: "Number of passengers in the taxi."
+      - name: trip_distance
+        description: "Distance of the trip in miles."
+      - name: rate_code
+        description: "Rate code for the trip."
+      - name: store_and_fwd_flag
+        description: "Flag indicating if the trip record was held in vehicle memory before sending to the vendor."
+      - name: payment_type
+        description: "Payment method used for the trip."
+      - name: fare_amount
+        description: "Fare amount for the trip."
+      - name: extra
+        description: "Extra charges for the trip."
+      - name: mta_tax
+        description: "MTA tax for the trip."
+      - name: tip_amount
+        description: "Tip amount for the trip."
+      - name: tolls_amount
+        description: "Tolls amount for the trip."
+      - name: improvement_surcharge
+        description: "Improvement surcharge for the trip."
+      - name: total_amount
+        description: "Total amount for the trip."

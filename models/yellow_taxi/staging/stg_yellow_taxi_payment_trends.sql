@@ -1,5 +1,4 @@
 SELECT
-    tpep_pickup_datetime,   
     DATE_TRUNC(tpep_pickup_datetime, MONTH) AS month,
     EXTRACT(DAYOFWEEK FROM tpep_pickup_datetime) AS day_of_week,
     payment_type,

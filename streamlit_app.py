@@ -1,6 +1,15 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import altair as alt
+
+st.set_page_config(
+    page_title="Etude type de paiement des trajets de taxi",
+    page_icon="🚕",
+    layout="wide",
+    initial_sidebar_state="expanded")
+
+alt.themes.enable("dark")
 
 # Créer les données
 data = {
@@ -75,3 +84,11 @@ st.header("Indicateurs Clés de Performance (KPI)")
 st.metric(label="Nombre Total de Trajets", value=df["total_trips"].sum())
 st.metric(label="Revenu Total", value=df["total_revenue"].sum())
 st.metric(label="Tarif Moyen Global", value=round(df["total_revenue"].sum() / df["total_trips"].sum(), 2))
+
+
+with st.expander('About', expanded=True):
+    st.write('''
+        - Data: [Kaggle NYC taxi Dataset](<https://www.kaggle.com/datasets/microize/newyork-yellow-taxi-trip-data-2020-2019>).
+        - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+        - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+        ''')

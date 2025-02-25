@@ -26,13 +26,13 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6 {
         color: #BB86FC;
     }
-    
-    /* Modifier les composants interactifs */
-    .stTextInput, .stSelectbox, .stMetric {
-        background-color: #1E1E1E !important;
-        color: white !important;
-    }
 
+    /* Modifier les labels des widgets */
+    label {
+        color: white !important;
+        font-weight: bold;
+    }
+    
     /* Modifier les barres latérales */
     [data-testid="stSidebar"] {
         background-color: #1E1E1E;
@@ -43,18 +43,11 @@ st.markdown("""
         color: white;
     }
 
-    /* Boutons et autres éléments */
-    .stButton>button {
-        background-color: #BB86FC;
-        color: white;
-        border-radius: 5px;
-    }
-    
     /* Ajuster les graphiques Matplotlib */
     .stPlotlyChart, .stPyplot {
         background-color: transparent !important;
     }
-    
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -73,15 +66,22 @@ with st.sidebar:
     st.title('🚕 Dashboard Paiements Taxi NYC')
     
     analysis_point = ("Étude globale", "Étude temporelle", "Étude géographique")
-    selected_analysis = st.selectbox('Sélectionner un type d\'analyse', analysis_point)
-    
+    selected_analysis = st.selectbox('📊 Sélectionner un type d\'analyse', analysis_point)
+
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
-    color_theme_list = ['blues', 'cividis', 'greens', 'inferno', 'magma', 'plasma', 'reds', 'rainbow', 'turbo', 'viridis']
-    selected_color_theme = st.selectbox('🎨 Thème des couleurs', color_theme_list)
+# Disposition avec KPI en haut à droite
+col1, col2 = st.columns([2, 1])
+
+with col2:
+    st.header("🚀 Indicateurs Clés de Performance (KPI)")
+    st.metric(label="🛺 Nombre Total de Trajets", value=df["total_trips"].sum())
+    st.metric(label="💵 Revenu Total", value=f"${df['total_revenue'].sum():,.2f}")
+    st.metric(label="💲 Tarif Moyen", value=f"${df['total_revenue'].sum() / df['total_trips'].sum():.2f}")
 
 # Titre principal
-st.title("📊 Tableau de Bord des Paiements Taxi NYC")
+with col1:
+    st.title("📊 Tableau de Bord des Paiements Taxi NYC")
 
 # Résumé général
 st.header("📌 Résumé")
@@ -110,12 +110,6 @@ with col2:
 # Tableau de données
 st.header("📄 Tableau Détailé")
 st.dataframe(df.style.set_properties(**{"background-color": "#1E1E1E", "color": "white"}))
-
-# KPI
-st.header("🚀 Indicateurs Clés de Performance (KPI)")
-st.metric(label="🛺 Nombre Total de Trajets", value=df["total_trips"].sum())
-st.metric(label="💵 Revenu Total", value=f"${df['total_revenue'].sum():,.2f}")
-st.metric(label="💲 Tarif Moyen", value=f"${df['total_revenue'].sum() / df['total_trips'].sum():.2f}")
 
 # Informations
 with st.expander('ℹ️ À propos', expanded=True):

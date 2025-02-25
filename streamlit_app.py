@@ -33,14 +33,11 @@ st.markdown(
         background-color: black;
         color: white;
     }
-    .css-1d391kg {
+    .stSidebar {
         background-color: grey;
-    }
-    .css-1d391kg .stSelectbox {
-        background-color: black;
         color: white;
     }
-    .css-1d391kg .stSelectbox div[data-baseweb="select"] {
+    .stSelectbox {
         background-color: black;
         color: white;
     }

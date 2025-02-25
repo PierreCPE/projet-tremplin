@@ -22,7 +22,7 @@ st.markdown("""
         color: white;
     }
     
-    /* Modifier les titres */
+    /* Titres et textes */
     h1, h2, h3, h4, h5, h6 {
         color: #BB86FC;
     }
@@ -32,14 +32,15 @@ st.markdown("""
         color: white !important;
         font-weight: bold;
     }
-    
+
     /* Barre latérale */
     [data-testid="stSidebar"] {
         background-color: #1E1E1E;
     }
 
     /* KPI en blanc */
-    div[data-testid="metric-container"] > label {
+    div[data-testid="metric-container"] > label, 
+    div[data-testid="metric-container"] > div {
         color: white !important;
     }
 
@@ -53,7 +54,6 @@ st.markdown("""
     .stPlotlyChart, .stPyplot {
         background-color: transparent !important;
     }
-
     </style>
     """, unsafe_allow_html=True)
 
@@ -107,24 +107,36 @@ with col1:
     st.bar_chart(df.set_index("payment_type")["total_trips"], use_container_width=True)
     st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=True)
 
-# Graphiques en secteurs en dessous et côte à côte
-col1, col2 = st.columns(2)
+# Graphiques en secteurs plus petits et centrés
+st.subheader("📌 Répartition des Paiements")
+col1, col2, col3 = st.columns([1, 2, 1])
 
 with col1:
-    st.subheader("🎯 Répartition des Trajets par Type de Paiement")
-    fig, ax = plt.subplots(facecolor='#121212')  # Fond noir
-    df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax, colors=plt.cm.Paired.colors)
-    ax.set_facecolor('#121212')  # Fond noir
-    ax.set_ylabel("")  # Enlever le label automatique
-    st.pyplot(fig)
+    st.write("")  # Pour centrer
 
 with col2:
-    st.subheader("🎯 Répartition des Revenus par Type de Paiement")
-    fig, ax = plt.subplots(facecolor='#121212')  # Fond noir
-    df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax, colors=plt.cm.Paired.colors)
-    ax.set_facecolor('#121212')  # Fond noir
-    ax.set_ylabel("")  # Enlever le label automatique
-    st.pyplot(fig)
+    col_a, col_b = st.columns(2)
+
+    with col_a:
+        st.write("**🧾 Répartition des Trajets**")
+        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
+        df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', ax=ax, colors=plt.cm.Paired.colors)
+        ax.set_facecolor('#121212')  # Fond noir
+        ax.set_ylabel("")  # Enlever le label automatique
+        plt.setp(ax.texts, color="white")  # Changer couleur texte en blanc
+        st.pyplot(fig)
+
+    with col_b:
+        st.write("**💰 Répartition des Revenus**")
+        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
+        df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', ax=ax, colors=plt.cm.Paired.colors)
+        ax.set_facecolor('#121212')  # Fond noir
+        ax.set_ylabel("")  # Enlever le label automatique
+        plt.setp(ax.texts, color="white")  # Changer couleur texte en blanc
+        st.pyplot(fig)
+
+with col3:
+    st.write("")  # Pour centrer
 
 # Tableau de données avec fond noir
 st.header("📄 Tableau Détailé")

@@ -16,11 +16,11 @@ df = pd.DataFrame(data)
 st.markdown(
     """
     <style>
-    .css-18e3th9 {
+    .main {
         background-color: black;
         color: white;
     }
-    .css-1d391kg {
+    .stApp {
         background-color: black;
         color: white;
     }
@@ -28,6 +28,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 # Titre du tableau de bord
 st.title("Tableau de Bord des Trajets de Taxi")
@@ -38,22 +39,28 @@ st.write("**Total des Trajets :**", df["total_trips"].sum())
 st.write("**Revenu Total :**", df["total_revenue"].sum())
 st.write("**Tarif Moyen Global :**", df["total_revenue"].sum() / df["total_trips"].sum())
 
-# Graphiques à Barres
-st.header("Graphiques à Barres")
-st.bar_chart(df.set_index("payment_type")["total_trips"], use_container_width=True)
-st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=True)
 
-# Graphiques en Secteurs
-st.header("Graphiques en Secteurs")
-st.write("**Pourcentage des Trajets par Type de Paiement**")
-fig, ax = plt.subplots()
-df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
-st.pyplot(fig)
+# Utiliser des colonnes pour organiser les sections côte à côte
+col1, col2 = st.columns(2)
 
-st.write("**Pourcentage des Revenus par Type de Paiement**")
-fig, ax = plt.subplots()
-df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
-st.pyplot(fig)
+with col1:
+    # Graphiques à Barres
+    st.header("Graphiques à Barres")
+    st.bar_chart(df.set_index("payment_type")["total_trips"], use_container_width=True)
+    st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=True)
+
+with col2:
+    # Graphiques en Secteurs
+    st.header("Graphiques en Secteurs")
+    st.write("**Pourcentage des Trajets par Type de Paiement**")
+    fig, ax = plt.subplots()
+    df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
+    st.pyplot(fig)
+
+    st.write("**Pourcentage des Revenus par Type de Paiement**")
+    fig, ax = plt.subplots()
+    df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
+    st.pyplot(fig)
 
 # Tableau Détailé
 st.header("Tableau Détailé")

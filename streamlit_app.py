@@ -16,7 +16,11 @@ df = pd.DataFrame(data)
 st.markdown(
     """
     <style>
-    .main {
+    .css-18e3th9 {
+        background-color: black;
+        color: white;
+    }
+    .css-1d391kg {
         background-color: black;
         color: white;
     }

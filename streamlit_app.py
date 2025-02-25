@@ -98,6 +98,10 @@ with col2:
     <div class="kpi-box">
         <div class="kpi-label">💵 Revenu</div>
         <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
+    </div><br>
+    <div class="kpi-box">
+        <div class="kpi-label">💲 Tarif Moyen</div>
+        <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -111,7 +115,7 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
-    fig, ax = plt.subplots(figsize=(6, 3))
+    fig, ax = plt.subplots(figsize=(3, 3))
     ax.bar(df["payment_type"], df["total_trips"], color='royalblue')
     ax.set_xlabel("Type de Paiement")
     ax.set_ylabel("Nombre de Trajets")
@@ -120,7 +124,7 @@ with col2:
         ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
     st.pyplot(fig)
 
-    fig, ax = plt.subplots(figsize=(6, 3))
+    fig, ax = plt.subplots(figsize=(3, 3))
     ax.bar(df["payment_type"], df["total_revenue"], color='orange')
     ax.set_xlabel("Type de Paiement")
     ax.set_ylabel("Revenu Total ($)")

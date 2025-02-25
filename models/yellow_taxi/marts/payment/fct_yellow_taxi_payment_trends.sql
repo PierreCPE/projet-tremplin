@@ -24,4 +24,4 @@ GROUP BY
 -- ORDER BY 
 --     month, 
 --     day_of_week, 
---     trip_count DESC
+--     trip_count 

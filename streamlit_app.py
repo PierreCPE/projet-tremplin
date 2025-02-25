@@ -33,23 +33,19 @@ st.markdown(
         background-color: black;
         color: white;
     }
-    .stSidebar {
-        background-color: grey;
-        color: white;
-    }
-    div[data-baseweb="select"] {
-        background-color: black;
 
-    }
-
-    # .stSelectbox {
-    #     background-color: black;
-    #     color: white;
-    # }
     </style>
     """,
     unsafe_allow_html=True
 )
+
+sidebar_bg = """
+[data-testid="stSidebar"] {
+  background: rgba(0, 0, 0, 0);
+}
+"""
+
+st.markdown(sidebar_bg, unsafe_allow_html=True)
 
 
 with st.sidebar:

@@ -1,17 +1,22 @@
--- On veut clean la date car les mois ne sont pas bons 
 WITH filtered_data AS (
     SELECT 
         *
     FROM {{ ref('stg_yellow_taxi_agg') }}
     WHERE 
-        DATE_TRUNC(tpep_pickup_datetime, MONTH) BETWEEN '2019-01-01' AND '2020-06-30'
-        AND DATE_TRUNC(tpep_dropoff_datetime, MONTH) BETWEEN '2019-01-01' AND '2020-06-30'
-        AND trip_distance >= 0 AND trip_distance <= 80 AND 
-        fare_amount >= 0 AND fare_amount <= 10000 AND
-        extra >= 0 AND extra <= 1.5 AND
-        tip_amount >= 0 AND tip_amount <= 10000 AND
-        tolls_amount >= 0 AND tolls_amount <= 5000 AND
-        total_amount >= 0 AND total_amount <= 15000 
+        VendorID IN (1, 2)
+        AND tpep_pickup_datetime BETWEEN '2019-01-01' AND '2020-06-30'
+        AND tpep_dropoff_datetime BETWEEN '2019-01-01' AND '2020-06-30'
+        AND Trip_distance > 0 AND Trip_distance <= 80
+        AND PULocationID BETWEEN 1 AND 265
+        AND DOLocationID BETWEEN 1 AND 265
+        AND RateCodeID BETWEEN 1 AND 6
+        AND Payment_type BETWEEN 1 AND 5
+        AND Fare_amount BETWEEN 0 AND 100
+        AND Extra IN (0.50, 1)
+        AND MTA_tax = 0.50
+        AND Tip_amount BETWEEN 0 AND 1000
+        AND Tolls_amount BETWEEN 0 AND 1000
+        AND Total_amount > 0 AND Total_amount < 10000
         AND
         improvement_surcharge = 0.3
 

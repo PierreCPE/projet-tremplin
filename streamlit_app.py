@@ -38,22 +38,23 @@ st.markdown("""
         background-color: #1E1E1E;
     }
 
-    /* KPI en blanc */
-    div[data-testid="metric-container"] {
-        background-color: black !important;
-        border-radius: 8px;
+    /* KPI en blanc dans une box noire */
+    .kpi-box {
+        background-color: black;
         padding: 10px;
+        border-radius: 10px;
         text-align: center;
     }
 
-    div[data-testid="metric-container"] label {
-        color: white !important;
+    .kpi-value {
+        color: white;
+        font-size: 22px;
         font-weight: bold;
     }
 
-    div[data-testid="metric-container"] div {
-        color: white !important;
-        font-size: 20px;
+    .kpi-label {
+        color: #BB86FC;
+        font-size: 14px;
     }
 
     /* Fond noir pour le tableau */
@@ -97,9 +98,20 @@ col1, col2 = st.columns([2, 1])
 
 with col2:
     st.header("🚀 Indicateurs Clés de Performance (KPI)")
-    st.metric(label="🛺 Nombre Total de Trajets", value=format_large_number(df["total_trips"].sum()))
-    st.metric(label="💵 Revenu Total", value=f"${format_large_number(df['total_revenue'].sum())}")
-    st.metric(label="💲 Tarif Moyen", value=f"${df['total_revenue'].sum() / df['total_trips'].sum():.2f}")
+    st.markdown(f"""
+    <div class="kpi-box">
+        <div class="kpi-label">🛺 Nombre Total de Trajets</div>
+        <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
+    </div><br>
+    <div class="kpi-box">
+        <div class="kpi-label">💵 Revenu Total</div>
+        <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
+    </div><br>
+    <div class="kpi-box">
+        <div class="kpi-label">💲 Tarif Moyen</div>
+        <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Titre principal
 with col1:
@@ -108,27 +120,30 @@ with col1:
 # Graphiques à barres avec fond noir et valeurs en blanc
 st.subheader("📊 Graphiques à Barres")
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.bar(df["payment_type"], df["total_trips"], color='#BB86FC')
-ax.set_facecolor('#121212')  # Fond noir
-ax.set_xlabel("Type de Paiement", color="white")
-ax.set_ylabel("Nombre de Trajets", color="white")
-ax.tick_params(colors="white")
-for i, v in enumerate(df["total_trips"]):
-    ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
-st.pyplot(fig)
+col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.bar(df["payment_type"], df["total_revenue"], color='#03DAC5')
-ax.set_facecolor('#121212')  # Fond noir
-ax.set_xlabel("Type de Paiement", color="white")
-ax.set_ylabel("Revenu Total ($)", color="white")
-ax.tick_params(colors="white")
-for i, v in enumerate(df["total_revenue"]):
-    ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
-st.pyplot(fig)
+with col2:
+    fig, ax = plt.subplots(figsize=(6, 3))
+    ax.bar(df["payment_type"], df["total_trips"], color='#BB86FC')
+    ax.set_facecolor('#121212')  # Fond noir
+    ax.set_xlabel("Type de Paiement", color="white")
+    ax.set_ylabel("Nombre de Trajets", color="white")
+    ax.tick_params(colors="white")
+    for i, v in enumerate(df["total_trips"]):
+        ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
+    st.pyplot(fig)
 
-# Graphiques en secteurs plus petits et centrés
+    fig, ax = plt.subplots(figsize=(6, 3))
+    ax.bar(df["payment_type"], df["total_revenue"], color='#03DAC5')
+    ax.set_facecolor('#121212')  # Fond noir
+    ax.set_xlabel("Type de Paiement", color="white")
+    ax.set_ylabel("Revenu Total ($)", color="white")
+    ax.tick_params(colors="white")
+    for i, v in enumerate(df["total_revenue"]):
+        ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
+    st.pyplot(fig)
+
+# Graphiques en secteurs plus petits et centrés avec légende
 st.subheader("📌 Répartition des Paiements")
 col1, col2, col3 = st.columns([1, 2, 1])
 
@@ -141,9 +156,13 @@ with col2:
     with col_a:
         st.write("**🧾 Répartition des Trajets**")
         fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
-        wedges, texts, autotexts = ax.pie(df["total_trips"], autopct=lambda p: f'{p:.0f}%' if p > 5 else '', colors=plt.cm.Paired.colors)
+        wedges, texts, autotexts = ax.pie(
+            df["total_trips"], 
+            autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
+            colors=plt.cm.Paired.colors,
+            labels=df["payment_type"]
+        )
         ax.set_facecolor('#121212')  # Fond noir
-        ax.set_ylabel("")  # Enlever le label automatique
         for text in texts + autotexts:
             text.set_color("white")
         st.pyplot(fig)
@@ -151,9 +170,13 @@ with col2:
     with col_b:
         st.write("**💰 Répartition des Revenus**")
         fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
-        wedges, texts, autotexts = ax.pie(df["total_revenue"], autopct=lambda p: f'{p:.0f}%' if p > 5 else '', colors=plt.cm.Paired.colors)
+        wedges, texts, autotexts = ax.pie(
+            df["total_revenue"], 
+            autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
+            colors=plt.cm.Paired.colors,
+            labels=df["payment_type"]
+        )
         ax.set_facecolor('#121212')  # Fond noir
-        ax.set_ylabel("")  # Enlever le label automatique
         for text in texts + autotexts:
             text.set_color("white")
         st.pyplot(fig)

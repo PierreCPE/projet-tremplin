@@ -3,13 +3,12 @@ version: 2
 sources:
   - name: yellow_taxi
     description: A clone of a bucket (kaggle dataset) about taxi in NYC
-    database: projet-tremplin-451615
     schema: dbt_yellow_taxi
     tables:
       - name: taxi_zone_lookup
         description: Summary of taxis zones.
         columns:
-          - name: location_id
+          - name: LocationID
             description: Primary key for location.
             tests:
               - unique

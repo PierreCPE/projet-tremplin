@@ -45,12 +45,7 @@ Les données utilisées pour cette analyse proviennent de la table `yellow_trip_
 - **tolls_amount** : Montant total de tous les péages payés pendant le trajet.
 - **improvement_surcharge** : Surtaxe d'amélioration de 0,30 $ appliquée aux trajets au moment du déclenchement du compteur. La surtaxe d'amélioration a commencé à être perçue en 2015.
 - **total_amount** : Le montant total facturé aux passagers. N'inclut pas les pourboires en espèces.
-## Étapes du Projet
-1. **Extraction des Données** : Importer les données de BigQuery dans DBT Cloud.
-2. **Transformation des Données** : Nettoyer et transformer les données pour l'analyse.
-3. **Analyse des Données** : Utiliser des requêtes SQL pour analyser les types de paiement.
-4. **Visualisation des Résultats** : Créer des visualisations pour présenter les résultats de l'analyse.
-5. **Recommandations** : Fournir des recommandations basées sur les insights obtenus.
+- **congestion_surchage** : Le montant ajouté au prix pour congestion de traffic
 
 Il existe également une table `taxi_zone_lookup`
 avec comme colonnes:
@@ -58,6 +53,21 @@ avec comme colonnes:
 - **Borough** : Arrondissement de NYC où se trouve la zone de taxi.
 - **Zone** : Nom de la zone de taxi.
 - **service_zone** : Zone de service spécifique (ex. : aéroport, zone touristique).
+
+
+## Étapes du Projet
+### Partie 1 : Etude globale: 
+
+1. **Extraction des Données** : Importer les données de BigQuery dans DBT Cloud.
+2. **Transformation des Données** :
+    - **Bronze Layer** : Importer les données brutes de chaque mois.
+    - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle. Suppression des valeurs nulles dans la table aggrégé.
+    - **Gold Layer** : Agréger les données par type de paiement et calculer les métriques.
+3. **Analyse des Données** :
+    - **fct_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.
+    - **fct_payment_trends** : Tendances des types de paiements au fil du temps, incluant le nombre de trajets et le montant total par type de paiement, mois et jour de la semaine.
+4. **Visualisation des Résultats** : Créer des visualisations pour présenter les résultats de l'analyse.
+5. **Recommandations** : Fournir des recommandations basées sur les insights obtenus.
 
 ## Conclusion
 Cette analyse fournira des insights précieux pour les chauffeurs et les gestionnaires de flottes de taxis à NYC, leur permettant d'optimiser les types de paiement acceptés et d'améliorer l'expérience client.

@@ -1,1 +1,0 @@
--- c'est une palceholdder pour la finacen 

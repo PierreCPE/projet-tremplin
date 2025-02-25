@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Créer les données
 data = {
@@ -10,6 +11,19 @@ data = {
 }
 
 df = pd.DataFrame(data)
+
+# Injecter du CSS pour changer le fond en noir
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: black;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Titre du tableau de bord
 st.title("Tableau de Bord des Trajets de Taxi")
@@ -28,10 +42,14 @@ st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=
 # Graphiques en Secteurs
 st.header("Graphiques en Secteurs")
 st.write("**Pourcentage des Trajets par Type de Paiement**")
-st.pyplot(df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', figsize=(5, 5)).figure)
+fig, ax = plt.subplots()
+df.set_index("payment_type")["total_trips"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
+st.pyplot(fig)
 
 st.write("**Pourcentage des Revenus par Type de Paiement**")
-st.pyplot(df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', figsize=(5, 5)).figure)
+fig, ax = plt.subplots()
+df.set_index("payment_type")["total_revenue"].plot.pie(autopct='%1.1f%%', figsize=(5, 5), ax=ax)
+st.pyplot(fig)
 
 # Tableau Détailé
 st.header("Tableau Détailé")

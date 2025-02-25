@@ -40,9 +40,9 @@ st.markdown(
 
 
 with st.sidebar:
-    st.title('🏂 US Population Dashboard')
+    st.title('🚕 Dashboard types de paiements Taxi NYC')
     
-    analysis_point = ("Etude globale, Etude temporelle, Etude géographique")
+    analysis_point = ("Etude globale", "Etude temporelle", "Etude géographique")
     selected_analysis = st.selectbox('Select an analysis point', analysis_point)
     
     if selected_analysis == 'Etude globale':
@@ -53,6 +53,9 @@ with st.sidebar:
 
     elif selected_analysis == 'Etude géographique':
         st.write('Etude géographique')
+
+    color_theme_list = ['blues', 'cividis', 'greens', 'inferno', 'magma', 'plasma', 'reds', 'rainbow', 'turbo', 'viridis']
+    selected_color_theme = st.selectbox('Select a color theme', color_theme_list)
 
 
 # Titre du tableau de bord

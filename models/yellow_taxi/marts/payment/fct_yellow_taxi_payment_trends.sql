@@ -1,6 +1,6 @@
 SELECT
     payment_type,
-    CASE 
+    CASE --jinja code MACRO
         WHEN payment_type = 1 THEN 'Credit card'
         WHEN payment_type = 2 THEN 'Cash'
         WHEN payment_type = 3 THEN 'No charge'

@@ -19,7 +19,7 @@ WITH filtered_data AS (
         AND Total_amount > 0 AND Total_amount < 10000
         AND
         improvement_surcharge = 0.3
-
+        AND TIMESTAMP_DIFF(tpep_dropoff_datetime, tpep_pickup_datetime, HOUR) < 30
 )
 
 SELECT 

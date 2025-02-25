@@ -39,6 +39,22 @@ st.markdown(
 )
 
 
+with st.sidebar:
+    st.title('🏂 US Population Dashboard')
+    
+    analysis_point = ("Etude globale, Etude temporelle, Etude géographique")
+    selected_analysis = st.selectbox('Select an analysis point', analysis_point)
+    
+    if selected_analysis == 'Etude globale':
+        st.write('Etude globale')
+
+    elif selected_analysis == 'Etude temporelle':
+        st.write('Etude temporelle')
+
+    elif selected_analysis == 'Etude géographique':
+        st.write('Etude géographique')
+
+
 # Titre du tableau de bord
 st.title("Tableau de Bord des Trajets de Taxi")
 

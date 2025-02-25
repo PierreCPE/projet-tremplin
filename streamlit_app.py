@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import altair as alt
+import matplotlib.colors as mcolors
 
 st.set_page_config(
     page_title="Étude des paiements Taxi NYC",
@@ -115,7 +116,7 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
-    fig, ax = plt.subplots(figsize=(3, 3))
+    fig, ax = plt.subplots(figsize=(6, 3))
     ax.bar(df["payment_type"], df["total_trips"], color='royalblue')
     ax.set_xlabel("Type de Paiement")
     ax.set_ylabel("Nombre de Trajets")
@@ -124,7 +125,7 @@ with col2:
         ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
     st.pyplot(fig)
 
-    fig, ax = plt.subplots(figsize=(3, 3))
+    fig, ax = plt.subplots(figsize=(6, 3))
     ax.bar(df["payment_type"], df["total_revenue"], color='orange')
     ax.set_xlabel("Type de Paiement")
     ax.set_ylabel("Revenu Total ($)")
@@ -175,7 +176,7 @@ with col2:
 
 # Ajout de la légende pour les camemberts
 st.write("📍 **Légende des modes de paiement**")
-legend_colors = [f'<span style="color: {plt.colors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
+legend_colors = [f'<span style="color: {mcolors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
 st.markdown(" &nbsp; &nbsp; ".join(legend_colors), unsafe_allow_html=True)
 
 with col3:

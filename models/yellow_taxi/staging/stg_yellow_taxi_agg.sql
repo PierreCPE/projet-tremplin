@@ -1,92 +1,92 @@
 WITH concatenated_data AS (
     SELECT 
         *,
-        CONCAT('2019_01_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201901', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ ref('stg_yellow_taxi_2019_01_congestion') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_02_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201902', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_02') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_03_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201903', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_03') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_04_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201904', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_04') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_05_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201905', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_05') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_06_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201906', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_06') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_07_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201907', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_07') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_08_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201908', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_08') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_09_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201909', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_09') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_10_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201910', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_10') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_11_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201911', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_11') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2019_12_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('201912', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2019_12') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_01_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202001', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_01') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_02_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202002', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_02') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_03_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202003', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_03') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_04_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202004', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_04') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_05_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202005', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_05') }}
     UNION ALL
     SELECT 
         *,
-        CONCAT('2020_06_', CAST(ROW_NUMBER() OVER() AS STRING)) AS trip_id
+        CONCAT('202006', ROW_NUMBER() OVER() ) AS trip_id
     FROM {{ source('yellow_taxi', 'yellow_tripdata_2020_06') }}
 )
 

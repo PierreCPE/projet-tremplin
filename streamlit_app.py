@@ -38,23 +38,25 @@ st.markdown("""
         background-color: #1E1E1E;
     }
 
-    /* KPI en blanc dans une box noire */
+    /* KPI en boîte compacte */
     .kpi-box {
         background-color: black;
-        padding: 10px;
+        padding: 8px;
         border-radius: 10px;
         text-align: center;
+        width: 120px;
+        margin: auto;
     }
 
     .kpi-value {
         color: white;
-        font-size: 22px;
+        font-size: 18px;
         font-weight: bold;
     }
 
     .kpi-label {
         color: #BB86FC;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     /* Fond noir pour le tableau */
@@ -76,22 +78,12 @@ def format_large_number(value):
 
 # Données
 data = {
-    "payment_type": [1, 2, 3, 4, 5],
+    "payment_type": ["Carte", "Espèces", "Autre", "Crédit", "Inconnu"],
     "total_trips": [23246764, 8289088, 39662, 13377, 3],
-    "total_revenue": [437129175.84, 126905655.80, 637824.18, 240425.69, 102.02],
-    "avg_fare": [18.80, 15.30, 16.08, 17.97, 34.00]
+    "total_revenue": [437129175.84, 126905655.80, 637824.18, 240425.69, 102.02]
 }
 
 df = pd.DataFrame(data)
-
-# Barre latérale
-with st.sidebar:
-    st.title('🚕 Dashboard Paiements Taxi NYC')
-    
-    analysis_point = ("Étude globale", "Étude temporelle", "Étude géographique")
-    selected_analysis = st.selectbox('📊 Sélectionner un type d\'analyse', analysis_point)
-
-    st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
 # Disposition des KPI en haut à droite
 col1, col2 = st.columns([2, 1])
@@ -100,16 +92,12 @@ with col2:
     st.header("🚀 Indicateurs Clés de Performance (KPI)")
     st.markdown(f"""
     <div class="kpi-box">
-        <div class="kpi-label">🛺 Nombre Total de Trajets</div>
+        <div class="kpi-label">🛺 Trajets</div>
         <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
     </div><br>
     <div class="kpi-box">
-        <div class="kpi-label">💵 Revenu Total</div>
+        <div class="kpi-label">💵 Revenu</div>
         <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
-    </div><br>
-    <div class="kpi-box">
-        <div class="kpi-label">💲 Tarif Moyen</div>
-        <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -117,35 +105,35 @@ with col2:
 with col1:
     st.title("📊 Tableau de Bord des Paiements Taxi NYC")
 
-# Graphiques à barres avec fond noir et valeurs en blanc
-st.subheader("📊 Graphiques à Barres")
+# Graphiques à barres (couleurs classiques)
+st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
     fig, ax = plt.subplots(figsize=(6, 3))
-    ax.bar(df["payment_type"], df["total_trips"], color='#BB86FC')
-    ax.set_facecolor('#121212')  # Fond noir
-    ax.set_xlabel("Type de Paiement", color="white")
-    ax.set_ylabel("Nombre de Trajets", color="white")
-    ax.tick_params(colors="white")
+    ax.bar(df["payment_type"], df["total_trips"], color='royalblue')
+    ax.set_xlabel("Type de Paiement")
+    ax.set_ylabel("Nombre de Trajets")
+    ax.set_title("Nombre de trajets par type de paiement")
     for i, v in enumerate(df["total_trips"]):
-        ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
+        ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
     st.pyplot(fig)
 
     fig, ax = plt.subplots(figsize=(6, 3))
-    ax.bar(df["payment_type"], df["total_revenue"], color='#03DAC5')
-    ax.set_facecolor('#121212')  # Fond noir
-    ax.set_xlabel("Type de Paiement", color="white")
-    ax.set_ylabel("Revenu Total ($)", color="white")
-    ax.tick_params(colors="white")
+    ax.bar(df["payment_type"], df["total_revenue"], color='orange')
+    ax.set_xlabel("Type de Paiement")
+    ax.set_ylabel("Revenu Total ($)")
+    ax.set_title("Revenu total par type de paiement")
     for i, v in enumerate(df["total_revenue"]):
-        ax.text(df["payment_type"][i], v, format_large_number(v), ha='center', va='bottom', color='white', fontsize=10)
+        ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
     st.pyplot(fig)
 
 # Graphiques en secteurs plus petits et centrés avec légende
 st.subheader("📌 Répartition des Paiements")
 col1, col2, col3 = st.columns([1, 2, 1])
+
+colors = plt.cm.Paired.colors
 
 with col1:
     st.write("")  # Pour centrer
@@ -155,31 +143,36 @@ with col2:
 
     with col_a:
         st.write("**🧾 Répartition des Trajets**")
-        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
+        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
         wedges, texts, autotexts = ax.pie(
             df["total_trips"], 
             autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-            colors=plt.cm.Paired.colors,
-            labels=df["payment_type"]
+            colors=colors,
+            labels=None
         )
-        ax.set_facecolor('#121212')  # Fond noir
+        ax.set_facecolor('#121212')
         for text in texts + autotexts:
             text.set_color("white")
         st.pyplot(fig)
 
     with col_b:
         st.write("**💰 Répartition des Revenus**")
-        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  # Plus petit et fond noir
+        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
         wedges, texts, autotexts = ax.pie(
             df["total_revenue"], 
             autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-            colors=plt.cm.Paired.colors,
-            labels=df["payment_type"]
+            colors=colors,
+            labels=None
         )
-        ax.set_facecolor('#121212')  # Fond noir
+        ax.set_facecolor('#121212')
         for text in texts + autotexts:
             text.set_color("white")
         st.pyplot(fig)
+
+# Ajout de la légende pour les camemberts
+st.write("📍 **Légende des modes de paiement**")
+legend_colors = [f'<span style="color: {plt.colors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
+st.markdown(" &nbsp; &nbsp; ".join(legend_colors), unsafe_allow_html=True)
 
 with col3:
     st.write("")  # Pour centrer

@@ -228,7 +228,8 @@ elif selected_analysis == "Étude géographique":
     # Ajouter les polygones des quartiers à la carte
     for _, row in df_geo.iterrows():
         coordinates = json.loads(row['Coordinates'])
-        folium.GeoJson(coordinates).add_to(m)
+        if coordinates:  # Vérifier si les coordonnées sont présentes
+            folium.GeoJson(coordinates).add_to(m)
 
     # Afficher la carte dans Streamlit
     folium_static(m)

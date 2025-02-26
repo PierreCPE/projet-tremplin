@@ -217,7 +217,7 @@ elif selected_analysis == "Étude géographique":
     # Requête pour récupérer les données de BigQuery
     query = """
     SELECT State, County, City, Name, RegionID, Coordinates
-    FROM `your_project.your_dataset.ZillowNeighborhoods_NY`
+    FROM `projet-tremplin-451615.dbt_pgosson.NY_ZillowNeighborhoods_CSV_Table`
     WHERE City = 'New York'
     """
     df_geo = read_gbq(query, project_id="your_project_id", credentials=credentials)

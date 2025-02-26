@@ -44,11 +44,6 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Combobox */
-    .stSelectbox, .stMultiSelect {
-        background-color: black !important;
-        color: white !important;
-    }
     /* KPI en boîte compacte */
     .kpi-box {
         background-color: black;
@@ -104,7 +99,7 @@ with st.sidebar:
     selected_analysis = st.selectbox('📊 Sélectionner un type d\'analyse', analysis_point)
 
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
-    
+
 # Disposition des KPI en haut à droite
 col1, col2 = st.columns([2, 1])
 

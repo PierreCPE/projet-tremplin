@@ -100,38 +100,66 @@ with st.sidebar:
 
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
-# Disposition des KPI en ligne
-col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.metric(label="🛺 Trajets", value=format_large_number(df["total_trips"].sum()))
+# Disposition des KPI en ligne
+kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+
+with kpi_col1:
+    st.markdown(f"""
+    <div class="kpi-box">
+        <div class="kpi-label">🚽 Trajets</div>
+        <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with kpi_col2:
+    st.markdown(f"""
+    <div class="kpi-box">
+        <div class="kpi-label">💵 Revenu</div>
+        <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with kpi_col3:
+    st.markdown(f"""
+    <div class="kpi-box">
+        <div class="kpi-label">💲 Tarif Moyen</div>
+        <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Graphiques à barres avec st.bar_chart
+st.subheader("\ud83d\udcca Nombre de trajets et Revenu par mode de paiement")
+col1, col2, col3 = st.columns([1, 2, 1])
 
 with col2:
-    st.metric(label="💵 Revenu", value=f"${format_large_number(df["total_revenue"].sum())}")
+    st.bar_chart(df.set_index("payment_type")["total_trips"], use_container_width=True)
+    st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=True)
 
-with col3:
-    st.metric(label="💲 Tarif Moyen", value=f"${df['total_revenue'].sum() / df['total_trips'].sum():.2f}")
+# Graphiques circulaires avec Plotly
+st.subheader("\ud83d\udccc Répartition des Paiements")
+cols = st.columns([1, 1])
 
-# Graphiques à barres
-st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
-st.bar_chart(df.set_index("payment_type")[["total_trips"]])
-st.bar_chart(df.set_index("payment_type")[["total_revenue"]])
+with cols[0]:
+    fig = px.pie(df, values="total_trips", names="payment_type", title="Répartition des Trajets", height=300)
+    fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='black', width=2)))
+    st.plotly_chart(fig, use_container_width=True)
 
-# Graphiques circulaires
-st.subheader("📌 Répartition des Paiements")
-col4, col5 = st.columns(2)
+with cols[1]:
+    fig = px.pie(df, values="total_revenue", names="payment_type", title="Répartition des Revenus", height=300)
+    fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='black', width=2)))
+    st.plotly_chart(fig, use_container_width=True)
 
-with col4:
-    fig1 = px.pie(df, values="total_trips", names="payment_type", title="Répartition des Trajets")
-    st.plotly_chart(fig1, use_container_width=True)
+# Tableau des données
+st.header("\ud83d\udcdd Tableau Détailé")
+st.dataframe(df.style.set_properties(**{"background-color": "#1E1E1E", "color": "white"}))
 
-with col5:
-    fig2 = px.pie(df, values="total_revenue", names="payment_type", title="Répartition des Revenus")
-    st.plotly_chart(fig2, use_container_width=True)
-
-# Tableau de données
-st.header("📄 Tableau Détailé")
-st.dataframe(df)
+# Informations
+with st.expander('\u2139\ufe0f À propos', expanded=True):
+    st.write('''
+    - **Données :** [Kaggle NYC taxi Dataset](https://www.kaggle.com/datasets/microize/newyork-yellow-taxi-trip-data-2020-2019)
+    - **Objectif :** Analyse des types de paiement utilisés par les passagers des taxis de New York.
+    ''')
 
 
 # # Disposition des KPI en haut à droite

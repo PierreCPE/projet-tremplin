@@ -5,6 +5,9 @@ import altair as alt
 import matplotlib.colors as mcolors
 import folium
 from streamlit_folium import folium_static
+from google.oauth2 import service_account
+from pandas_gbq import read_gbq
+import json
 
 
 st.set_page_config(
@@ -202,12 +205,22 @@ if selected_analysis == "Étude globale":
 elif selected_analysis == "Étude temporelle":
     st.write("🔍 **Étude temporelle en cours de développement...**")
 
+
 elif selected_analysis == "Étude géographique":
     st.write("🔍 **Étude géographique**")
 
-    # Charger les données CSV
-    csv_file_path = 'C:/Users/Pierre.Gosson/Downloads/ZillowNeighborhoods-NY.csv'
-    df_geo = pd.read_csv(csv_file_path)
+    # Authentification avec BigQuery
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"]
+    )
+
+    # Requête pour récupérer les données de BigQuery
+    query = """
+    SELECT State, County, City, Name, RegionID, Coordinates
+    FROM `your_project.your_dataset.ZillowNeighborhoods_NY`
+    WHERE City = 'New York'
+    """
+    df_geo = read_gbq(query, project_id="your_project_id", credentials=credentials)
 
     # Créer une carte Folium
     m = folium.Map(location=[40.7128, -74.0060], zoom_start=10)

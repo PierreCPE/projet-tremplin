@@ -3,3 +3,5 @@ pandas
 matplotlib
 folium
 streamlit_folium
+pandas-gbq
+google-auth

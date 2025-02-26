@@ -107,6 +107,7 @@ with st.sidebar:
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
 # Disposition des KPI en ligne
+st.header("🚀 Indicateurs Clés de Performance (KPI)")
 st.markdown(f"""
     <div class="kpi-container">
         <div class="kpi-box">
@@ -133,7 +134,7 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
-    
+
     st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
     st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
 

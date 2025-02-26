@@ -220,7 +220,7 @@ elif selected_analysis == "Étude géographique":
     FROM `projet-tremplin-451615.dbt_pgosson.NY_ZillowNeighborhoods_CSV_Table`
     WHERE City = 'New York'
     """
-    df_geo = read_gbq(query, project_id="your_project_id", credentials=credentials)
+    df_geo = read_gbq(query, project_id="projet-tremplin-451615", credentials=credentials)
 
     # Créer une carte Folium
     m = folium.Map(location=[40.7128, -74.0060], zoom_start=10)

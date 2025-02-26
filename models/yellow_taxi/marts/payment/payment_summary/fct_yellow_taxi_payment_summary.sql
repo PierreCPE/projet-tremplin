@@ -1,5 +1,9 @@
+{% set payment_type_name = get_payment_type_name('payment_type') %}
+
+
 SELECT 
   payment_type, 
+  {{ payment_type_name }} AS payment_type_name,
   COUNT(*) AS total_trips, 
   SUM(total_amount) AS total_revenue, 
   AVG(total_amount) AS avg_fare

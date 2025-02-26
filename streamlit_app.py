@@ -134,9 +134,10 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
-
-    st.bar_chart(df.set_index("payment_type")[["total_trips"]], x="Types de paiements", y="Voyages totaux", use_container_width=True)
-    st.bar_chart(df.set_index("payment_type")[["total_revenue"]],x="Types de paiements",y="Revenue total", use_container_width=True)
+    st.write("**Nombre de trajets par mode de paiement**")  
+    st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
+    st.write("**Revenu par mode de paiement**")
+    st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
 
 # Graphiques en secteurs plus petits et centrés avec légende
 st.subheader("📌 Répartition des Paiements")

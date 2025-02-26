@@ -4,4 +4,4 @@ Borough,
 Zone,
 service_zone
 FROM 
-{{ ref('stg_yellow_taxi_location') }}
+{{ source('yellow_taxi', 'taxi_zone_lookup') }}

@@ -38,7 +38,17 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #1E1E1E;
     }
+    
+    /* Bouton de collapse de la barre latérale */
+    [data-testid="stSidebarCollapseButton"] {
+        color: white !important;
+    }
 
+    /* Combobox */
+    .stSelectbox, .stMultiSelect {
+        background-color: black !important;
+        color: white !important;
+    }
     /* KPI en boîte compacte */
     .kpi-box {
         background-color: black;

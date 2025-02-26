@@ -134,9 +134,41 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
+    # Graphique à barres pour le nombre de trajets
+    chart_trips = alt.Chart(df).mark_bar(color='royalblue').encode(
+        x=alt.X('payment_type', title='Type de Paiement'),
+        y=alt.Y('total_trips', title='Nombre de Trajets')
+    ).properties(
+        title='Nombre de trajets par type de paiement',
+        width='container',
+        height=300
+    ).configure_title(
+        color='white',
+        fontSize=20
+    ).configure_axis(
+        labelColor='white',
+        titleColor='white'
+    )
 
-    st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
-    st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
+    st.altair_chart(chart_trips, use_container_width=True)
+
+    # Graphique à barres pour le revenu total
+    chart_revenue = alt.Chart(df).mark_bar(color='orange').encode(
+        x=alt.X('payment_type', title='Type de Paiement'),
+        y=alt.Y('total_revenue', title='Revenu Total ($)')
+    ).properties(
+        title='Revenu total par type de paiement',
+        width='container',
+        height=300
+    ).configure_title(
+        color='white',
+        fontSize=20
+    ).configure_axis(
+        labelColor='white',
+        titleColor='white'
+    )
+
+    st.altair_chart(chart_revenue, use_container_width=True)
 
 # Graphiques en secteurs plus petits et centrés avec légende
 st.subheader("📌 Répartition des Paiements")

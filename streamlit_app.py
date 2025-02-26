@@ -45,6 +45,12 @@ st.markdown("""
     }
 
     /* KPI en boîte compacte */
+    .kpi-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
+
     .kpi-box {
         background-color: black;
         padding: 8px;
@@ -100,91 +106,26 @@ with st.sidebar:
 
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
-
-# # Disposition des KPI en ligne
-# kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
-
-# with kpi_col1:
-#     st.markdown(f"""
-#     <div class="kpi-box">
-#         <div class="kpi-label">🚽 Trajets</div>
-#         <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with kpi_col2:
-#     st.markdown(f"""
-#     <div class="kpi-box">
-#         <div class="kpi-label">💵 Revenu</div>
-#         <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with kpi_col3:
-#     st.markdown(f"""
-#     <div class="kpi-box">
-#         <div class="kpi-label">💲 Tarif Moyen</div>
-#         <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# # Graphiques à barres avec st.bar_chart
-# st.subheader("\ud83d\udcca Nombre de trajets et Revenu par mode de paiement")
-# col1, col2, col3 = st.columns([1, 2, 1])
-
-# with col2:
-#     st.bar_chart(df.set_index("payment_type")["total_trips"], use_container_width=True)
-#     st.bar_chart(df.set_index("payment_type")["total_revenue"], use_container_width=True)
-
-# # Graphiques circulaires avec Plotly
-# st.subheader("\ud83d\udccc Répartition des Paiements")
-# cols = st.columns([1, 1])
-
-# with cols[0]:
-#     fig = px.pie(df, values="total_trips", names="payment_type", title="Répartition des Trajets", height=300)
-#     fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='black', width=2)))
-#     st.plotly_chart(fig, use_container_width=True)
-
-# with cols[1]:
-#     fig = px.pie(df, values="total_revenue", names="payment_type", title="Répartition des Revenus", height=300)
-#     fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='black', width=2)))
-#     st.plotly_chart(fig, use_container_width=True)
-
-# # Tableau des données
-# st.header("\ud83d\udcdd Tableau Détailé")
-# st.dataframe(df.style.set_properties(**{"background-color": "#1E1E1E", "color": "white"}))
-
-# # Informations
-# with st.expander('\u2139\ufe0f À propos', expanded=True):
-#     st.write('''
-#     - **Données :** [Kaggle NYC taxi Dataset](https://www.kaggle.com/datasets/microize/newyork-yellow-taxi-trip-data-2020-2019)
-#     - **Objectif :** Analyse des types de paiement utilisés par les passagers des taxis de New York.
-#     ''')
-
-
-# Disposition des KPI en haut à droite
-col1, col2 = st.columns([2, 1])
-
-with col2:
-    st.header("🚀 Indicateurs Clés de Performance (KPI)")
-    st.markdown(f"""
-    <div class="kpi-box">
-        <div class="kpi-label">🛺 Trajets</div>
-        <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
-    </div>
-    <div class="kpi-box">
-        <div class="kpi-label">💵 Revenu</div>
-        <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
-    </div>
-    <div class="kpi-box">
-        <div class="kpi-label">💲 Tarif Moyen</div>
-        <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
+# Disposition des KPI en ligne
+st.markdown(f"""
+    <div class="kpi-container">
+        <div class="kpi-box">
+            <div class="kpi-label">🛺 Trajets</div>
+            <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
+        </div>
+        <div class="kpi-box">
+            <div class="kpi-label">💵 Revenu</div>
+            <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
+        </div>
+        <div class="kpi-box">
+            <div class="kpi-label">💲 Tarif Moyen</div>
+            <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 # Titre principal
-with col1:
-    st.title("📊 Tableau de Bord des Paiements Taxi NYC")
+st.title("📊 Tableau de Bord des Paiements Taxi NYC")
 
 # Graphiques à barres (couleurs classiques)
 st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
@@ -192,23 +133,9 @@ st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
 with col2:
-    fig, ax = plt.subplots(figsize=(6, 3))
-    ax.bar(df["payment_type"], df["total_trips"], color='royalblue')
-    ax.set_xlabel("Type de Paiement")
-    ax.set_ylabel("Nombre de Trajets")
-    ax.set_title("Nombre de trajets par type de paiement")
-    for i, v in enumerate(df["total_trips"]):
-        ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
-    st.pyplot(fig)
-
-    fig, ax = plt.subplots(figsize=(6, 3))
-    ax.bar(df["payment_type"], df["total_revenue"], color='orange')
-    ax.set_xlabel("Type de Paiement")
-    ax.set_ylabel("Revenu Total ($)")
-    ax.set_title("Revenu total par type de paiement")
-    for i, v in enumerate(df["total_revenue"]):
-        ax.text(i, v, format_large_number(v), ha='center', va='bottom', fontsize=10)
-    st.pyplot(fig)
+    
+    st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
+    st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
 
 # Graphiques en secteurs plus petits et centrés avec légende
 st.subheader("📌 Répartition des Paiements")

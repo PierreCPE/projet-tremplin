@@ -3,6 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import altair as alt
 import matplotlib.colors as mcolors
+import folium
+from streamlit_folium import folium_static
+
 
 st.set_page_config(
     page_title="Étude des paiements Taxi NYC",
@@ -106,90 +109,117 @@ with st.sidebar:
 
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
 
-# Disposition des KPI en ligne
-st.header("🚀 Indicateurs Clés de Performance (KPI)")
-st.markdown(f"""
-    <div class="kpi-container">
-        <div class="kpi-box">
-            <div class="kpi-label">🛺 Trajets</div>
-            <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
+# Affichage en fonction de l'analyse sélectionnée:
+
+if selected_analysis == "Étude globale":
+    
+    # Disposition des KPI en ligne
+    st.header("🚀 Indicateurs Clés de Performance (KPI)")
+    st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-box">
+                <div class="kpi-label">🛺 Trajets</div>
+                <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-label">💵 Revenu</div>
+                <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-label">💲 Tarif Moyen</div>
+                <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
+            </div>
         </div>
-        <div class="kpi-box">
-            <div class="kpi-label">💵 Revenu</div>
-            <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
-        </div>
-        <div class="kpi-box">
-            <div class="kpi-label">💲 Tarif Moyen</div>
-            <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-# Titre principal
-st.title("📊 Tableau de Bord des Paiements Taxi NYC")
+    # Titre principal
+    st.title("📊 Tableau de Bord des Paiements Taxi NYC")
 
-# Graphiques à barres (couleurs classiques)
-st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
+    # Graphiques à barres (couleurs classiques)
+    st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 
-col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
+    col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
 
-with col2:
-    st.write("**Nombre de trajets par mode de paiement**")  
-    st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
-    st.write("**Revenu par mode de paiement**")
-    st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
+    with col2:
+        st.write("**Nombre de trajets par mode de paiement**")  
+        st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
+        st.write("**Revenu par mode de paiement**")
+        st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
 
-# Graphiques en secteurs plus petits et centrés avec légende
-st.subheader("📌 Répartition des Paiements")
-col1, col2, col3 = st.columns([1, 2, 1])
+    # Graphiques en secteurs plus petits et centrés avec légende
+    st.subheader("📌 Répartition des Paiements")
+    col1, col2, col3 = st.columns([1, 2, 1])
 
-colors = plt.cm.Paired.colors
+    colors = plt.cm.Paired.colors
 
-with col1:
-    st.write("")  # Pour centrer
+    with col1:
+        st.write("")  # Pour centrer
 
-with col2:
-    col_a, col_b = st.columns(2)
+    with col2:
+        col_a, col_b = st.columns(2)
 
-    with col_a:
-        st.write("**🧾 Répartition des Trajets**")
-        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
-        wedges, texts, autotexts = ax.pie(
-            df["total_trips"], 
-            autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-            colors=colors,
-            labels=None
-        )
-        ax.set_facecolor('#121212')
-        for text in texts + autotexts:
-            text.set_color("white")
-        st.pyplot(fig)
+        with col_a:
+            st.write("**🧾 Répartition des Trajets**")
+            fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
+            wedges, texts, autotexts = ax.pie(
+                df["total_trips"], 
+                autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
+                colors=colors,
+                labels=None
+            )
+            ax.set_facecolor('#121212')
+            for text in texts + autotexts:
+                text.set_color("white")
+            st.pyplot(fig)
 
-    with col_b:
-        st.write("**💰 Répartition des Revenus**")
-        fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
-        wedges, texts, autotexts = ax.pie(
-            df["total_revenue"], 
-            autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-            colors=colors,
-            labels=None
-        )
-        ax.set_facecolor('#121212')
-        for text in texts + autotexts:
-            text.set_color("white")
-        st.pyplot(fig)
+        with col_b:
+            st.write("**💰 Répartition des Revenus**")
+            fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
+            wedges, texts, autotexts = ax.pie(
+                df["total_revenue"], 
+                autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
+                colors=colors,
+                labels=None
+            )
+            ax.set_facecolor('#121212')
+            for text in texts + autotexts:
+                text.set_color("white")
+            st.pyplot(fig)
 
-# Ajout de la légende pour les camemberts
-st.write("📍 **Légende des modes de paiement**")
-legend_colors = [f'<span style="color: {mcolors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
-st.markdown(" &nbsp; &nbsp; ".join(legend_colors), unsafe_allow_html=True)
+    # Ajout de la légende pour les camemberts
+    st.write("📍 **Légende des modes de paiement**")
+    legend_colors = [f'<span style="color: {mcolors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
+    st.markdown(" &nbsp; &nbsp; ".join(legend_colors), unsafe_allow_html=True)
 
-with col3:
-    st.write("")  # Pour centrer
+    with col3:
+        st.write("")  # Pour centrer
 
-# Tableau de données avec fond noir
-st.header("📄 Tableau Détailé")
-st.dataframe(df.style.set_properties(**{"background-color": "#1E1E1E", "color": "white"}))
+    # Tableau de données avec fond noir
+    st.header("📄 Tableau Détailé")
+    st.dataframe(df.style.set_properties(**{"background-color": "#1E1E1E", "color": "white"}))
+
+    
+elif selected_analysis == "Étude temporelle":
+    st.write("🔍 **Étude temporelle en cours de développement...**")
+
+elif selected_analysis == "Étude géographique":
+    st.write("🔍 **Étude géographique**")
+
+    # Charger les données CSV
+    csv_file_path = 'C:/Users/Pierre.Gosson/Downloads/ZillowNeighborhoods-NY.csv'
+    df_geo = pd.read_csv(csv_file_path)
+
+    # Créer une carte Folium
+    m = folium.Map(location=[40.7128, -74.0060], zoom_start=10)
+
+    # Ajouter les polygones des quartiers à la carte
+    for _, row in df_geo.iterrows():
+        coordinates = json.loads(row['Coordinates'])
+        folium.GeoJson(coordinates).add_to(m)
+
+    # Afficher la carte dans Streamlit
+    folium_static(m)
+
 
 # Informations
 with st.expander('ℹ️ À propos', expanded=True):

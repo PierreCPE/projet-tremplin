@@ -20,3 +20,18 @@
     WHEN {{ column_name }} = 'Sunday' THEN 7
   END
 {% endmacro %}
+
+{% macro adjust_day_of_week(column_name) %}
+  CASE 
+    WHEN EXTRACT(DAYOFWEEK FROM {{ column_name }}) = 1 THEN 7
+    ELSE EXTRACT(DAYOFWEEK FROM {{ column_name }}) - 1
+  END
+{% endmacro %}
+
+
+{% macro is_weekend(column_name) %}
+  CASE 
+    WHEN {{ adjust_day_of_week(column_name) }} IN (6, 7) THEN TRUE 
+    ELSE FALSE 
+  END
+{% endmacro %}

@@ -38,7 +38,7 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #1E1E1E;
     }
-    
+
     /* Bouton de collapse de la barre latérale */
     [data-testid="stSidebarCollapseButton"] {
         color: white !important;
@@ -96,6 +96,15 @@ data = {
 
 df = pd.DataFrame(data)
 
+# Barre latérale
+with st.sidebar:
+    st.title('🚕 Dashboard Paiements Taxi NYC')
+    
+    analysis_point = ("Étude globale", "Étude temporelle", "Étude géographique")
+    selected_analysis = st.selectbox('📊 Sélectionner un type d\'analyse', analysis_point)
+
+    st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
+    
 # Disposition des KPI en haut à droite
 col1, col2 = st.columns([2, 1])
 

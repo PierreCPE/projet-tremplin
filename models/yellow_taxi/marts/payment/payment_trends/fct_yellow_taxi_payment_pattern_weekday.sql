@@ -7,4 +7,4 @@ SELECT
   AVG(CASE WHEN payment_type = 1 THEN tip_amount ELSE NULL END) AS avg_tip_card
 FROM {{ ref('stg_yellow_taxi_agg_cleaned') }}
 GROUP BY weekday
-ORDER BY FIELD(weekday, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
+ORDER BY {{ order_by_weekday('weekday') }}

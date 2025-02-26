@@ -53,22 +53,22 @@ st.markdown("""
 
     .kpi-box {
         background-color: black;
-        padding: 8px;
+        padding: 24px;
         border-radius: 10px;
         text-align: center;
-        width: 120px;
+        width: 360px;
         margin: auto;
     }
 
     .kpi-value {
         color: white;
-        font-size: 18px;
+        font-size: 54px;
         font-weight: bold;
     }
 
     .kpi-label {
         color: #BB86FC;
-        font-size: 12px;
+        font-size: 36px;
     }
 
     /* Fond noir pour le tableau */

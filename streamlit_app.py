@@ -97,7 +97,11 @@ st.markdown("""
 
 # Fonction pour formatage des grands nombres
 def format_large_number(value):
-    return f"{value/1_000_000:.1f}M" if value >= 1_000_000 else f"{value:,}"
+    if value >= 1_000_000:
+        return f"{value / 1_000_000:.1f}M"
+    elif value >= 1_000:
+        return f"{value / 1_000:.1f}K"
+    return str(value)
 
 
 # Barre latérale
@@ -121,15 +125,24 @@ if selected_analysis == "Étude globale":
 
     client = bigquery.Client(credentials=credentials)
 
-    # Données
-    data = {
-        "payment_type": ["Carte", "Espèces", "Autre", "Crédit", "Inconnu"],
-        "total_trips": [23246764, 8289088, 39662, 13377, 3],
-        "total_revenue": [437129175.84, 126905655.80, 637824.18, 240425.69, 102.02]
-    }
+    # Données summary : 
 
-    df = pd.DataFrame(data)
+    @st.cache_data
+    def fetch_taxi_summary_data():
+        query = """
+        SELECT 
+            payment_type, 
+            payment_type_name,
+            total_trips,
+            total_revenue_with_tips AS total_revenue,
+            avg_fare_with_tips AS avg_fare
+        FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_summary`
+        LIMIT 1000
+        """
+        return client.query(query).to_dataframe()
     
+    df = fetch_taxi_summary_data()
+
     # Disposition des KPI en ligne
     st.header("🚀 Indicateurs Clés de Performance (KPI)")
     st.markdown(f"""
@@ -155,61 +168,58 @@ if selected_analysis == "Étude globale":
     # Graphiques à barres (couleurs classiques)
     st.subheader("📊 Nombre de trajets et Revenu par mode de paiement")
 
-    col1, col2, col3 = st.columns([1, 2, 1])  # Pour centrer les graphes
+    col1, col2, col3 = st.columns([33, 66, 33])  # Pour centrer les graphes
 
+    colors = px.colors.qualitative.Set2  
     with col2:
-        st.write("**Nombre de trajets par mode de paiement**")  
-        st.bar_chart(df.set_index("payment_type")[["total_trips"]], use_container_width=True)
-        st.write("**Revenu par mode de paiement**")
-        st.bar_chart(df.set_index("payment_type")[["total_revenue"]], use_container_width=True)
+        st.write("🧾 **Nombre de trajets par mode de paiement**")
+        df["formatted_trips"] = df["total_trips"].apply(format_large_number)
+        
+        fig_trips = px.bar(df, x="total_trips", y="payment_type_name", 
+                        orientation="h", text="formatted_trips",
+                        title="Nombre de trajets par mode de paiement",
+                        color="payment_type_name", color_discrete_sequence=colors)
+        fig_trips.update_traces(textposition="inside")
+        fig_trips.update_xaxes(title_text="Nombre de trajets", tickformat=",")
+        st.plotly_chart(fig_trips, use_container_width=True)
+
+        # 🔄 **Graphique du revenu**
+        st.write("💰 **Revenu par mode de paiement**")
+        df["formatted_revenue"] = df["total_revenue"].apply(format_large_number)
+        
+        fig_revenue = px.bar(df, x="total_revenue", y="payment_type_name", 
+                            orientation="h", text="formatted_revenue",
+                            title="Revenu par mode de paiement",
+                            color="payment_type_name", color_discrete_sequence=colors)
+        fig_revenue.update_traces(textposition="inside")
+        fig_revenue.update_xaxes(title_text="Revenu ($)", tickformat=",")
+        st.plotly_chart(fig_revenue, use_container_width=True)
 
     # Graphiques en secteurs plus petits et centrés avec légende
     st.subheader("📌 Répartition des Paiements")
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2 = st.columns([1, 1])
 
     colors = plt.cm.Paired.colors
 
+    # 🔄 **Graphique des trajets**
     with col1:
-        st.write("")  # Pour centrer
+        st.write("🧾 **Répartition des trajets**")
+        fig_trips = px.pie(df, values="total_trips", names="payment_type_name",
+                        title="Répartition des trajets par mode de paiement",
+                        hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
+        st.plotly_chart(fig_trips, use_container_width=True)
 
+    # 💰 **Graphique des revenus**
     with col2:
-        col_a, col_b = st.columns(2)
+        st.write("💰 **Répartition des revenus**")
+        fig_revenue = px.pie(df, values="total_revenue", names="payment_type_name",
+                            title="Répartition des revenus par mode de paiement",
+                            hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
+        st.plotly_chart(fig_revenue, use_container_width=True)
 
-        with col_a:
-            st.write("**🧾 Répartition des Trajets**")
-            fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
-            wedges, texts, autotexts = ax.pie(
-                df["total_trips"], 
-                autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-                colors=colors,
-                labels=None
-            )
-            ax.set_facecolor('#121212')
-            for text in texts + autotexts:
-                text.set_color("white")
-            st.pyplot(fig)
-
-        with col_b:
-            st.write("**💰 Répartition des Revenus**")
-            fig, ax = plt.subplots(figsize=(3, 3), facecolor='#121212')  
-            wedges, texts, autotexts = ax.pie(
-                df["total_revenue"], 
-                autopct=lambda p: f'{p:.0f}%' if p > 5 else '', 
-                colors=colors,
-                labels=None
-            )
-            ax.set_facecolor('#121212')
-            for text in texts + autotexts:
-                text.set_color("white")
-            st.pyplot(fig)
-
-    # Ajout de la légende pour les camemberts
-    st.write("📍 **Légende des modes de paiement**")
-    legend_colors = [f'<span style="color: {mcolors.to_hex(colors[i])}; font-size: 14px;">⬤ {df["payment_type"][i]}</span>' for i in range(len(df))]
-    st.markdown(" &nbsp; &nbsp; ".join(legend_colors), unsafe_allow_html=True)
-
-    with col3:
-        st.write("")  # Pour centrer
+    # 📋 **Comparaison des paiements**
+    st.write("📊 **Statistiques moyennes par mode de paiement**")
+    st.dataframe(df[["payment_type_name", "total_trips", "total_revenue", "avg_fare"]])
 
     # Tableau de données avec fond noir
     st.header("📄 Tableau Détailé")

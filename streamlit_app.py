@@ -137,7 +137,7 @@ if selected_analysis == "Étude globale":
             total_revenue_with_tips AS total_revenue,
             avg_fare_with_tips AS avg_fare
         FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_summary`
-        LIMIT 1000
+       
         """
         return client.query(query).to_dataframe()
     
@@ -227,7 +227,66 @@ if selected_analysis == "Étude globale":
 
     
 elif selected_analysis == "Étude temporelle":
-    st.write("🔍 **Étude temporelle en cours de développement...**")
+    st.write("🔍 **Étude temporelle ENCORE en cours de développement...**")
+
+    
+    # Authentification BigQuery
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"]
+    )
+
+    client = bigquery.Client(credentials=credentials)
+
+    # Chargement de la data
+
+    @st.cache_data
+    def fetch_payment_trends():
+        query_daily = """
+        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_by_day`
+        """
+        query_hourly = """
+        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_hourly`
+        """
+        query_weekday = """
+        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_weekday`
+        """
+        df_daily = client.query(query_daily).to_dataframe()
+        df_hourly = client.query(query_hourly).to_dataframe()
+        df_weekday = client.query(query_weekday).to_dataframe()
+        return df_daily, df_hourly, df_weekday
+
+    df_daily, df_hourly, df_weekday = fetch_payment_trends()
+
+    # 📅 **1. Évolution quotidienne des paiements**
+    st.subheader("📆 Évolution des paiements par jour")
+    fig_daily = px.line(df_daily, x="date", y=["cash_percentage", "card_percentage"], 
+                        labels={"value": "Pourcentage", "date": "Date"},
+                        title="Évolution du pourcentage des paiements en cash vs carte",
+                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
+    fig_daily.update_yaxes(ticksuffix="%")
+    st.plotly_chart(fig_daily, use_container_width=True)
+
+    # 🕒 **2. Analyse horaire des paiements**
+    st.subheader("⏳ Répartition des paiements selon l'heure de la journée")
+    fig_hourly = px.line(df_hourly, x="hour_of_day", y=["cash_percentage", "card_percentage"],
+                        labels={"hour_of_day": "Heure", "value": "Pourcentage"},
+                        title="Répartition des paiements en cash et carte par heure",
+                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
+    fig_hourly.update_yaxes(ticksuffix="%")
+    st.plotly_chart(fig_hourly, use_container_width=True)
+
+    # 📊 **3. Paiements selon les jours de la semaine**
+    st.subheader("📅 Répartition des paiements selon le jour de la semaine")
+    weekday_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    df_weekday["weekday"] = pd.Categorical(df_weekday["weekday"], categories=weekday_order, ordered=True)
+    df_weekday = df_weekday.sort_values("weekday")
+
+    fig_weekday = px.line(df_weekday, x="weekday", y=["cash_percentage", "card_percentage"],
+                        labels={"weekday": "Jour de la semaine", "value": "Pourcentage"},
+                        title="Comparaison des paiements en cash et carte par jour de la semaine",
+                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
+    fig_weekday.update_yaxes(ticksuffix="%")
+    st.plotly_chart(fig_weekday, use_container_width=True)
 
 
 elif selected_analysis == "Étude géographique":

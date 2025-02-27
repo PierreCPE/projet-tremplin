@@ -100,9 +100,6 @@ def format_large_number(value):
     return f"{value/1_000_000:.1f}M" if value >= 1_000_000 else f"{value:,}"
 
 
-
-df = pd.DataFrame(data)
-
 # Barre latérale
 with st.sidebar:
     st.title('🚕 Dashboard Paiements Taxi NYC')
@@ -131,6 +128,7 @@ if selected_analysis == "Étude globale":
         "total_revenue": [437129175.84, 126905655.80, 637824.18, 240425.69, 102.02]
     }
 
+    df = pd.DataFrame(data)
     
     # Disposition des KPI en ligne
     st.header("🚀 Indicateurs Clés de Performance (KPI)")

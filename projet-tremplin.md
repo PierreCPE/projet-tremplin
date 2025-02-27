@@ -48,11 +48,19 @@ Les données utilisées pour cette analyse proviennent de la table `yellow_trip_
 - **congestion_surchage** : Le montant ajouté au prix pour congestion de traffic
 
 Il existe également une table `taxi_zone_lookup`
+La colonne `service_zone` dans la table `taxi_zone_lookup` du dataset des taxis new yorkais indique la zone de service où se trouve la zone de taxi. 
+
 avec comme colonnes:
 - **LocationID** : Identifiant unique de la zone de taxi.
 - **Borough** : Arrondissement de NYC où se trouve la zone de taxi.
 - **Zone** : Nom de la zone de taxi.
-- **service_zone** : Zone de service spécifique (ex. : aéroport, zone touristique).
+- **service_zone** : Zone de service spécifique (ex. : aéroport, zone touristique), plus exactement :
+    - **EWR** : Cette valeur fait référence à l'aéroport international de Newark Liberty.
+    - **Boro Zone** : Cela désigne les zones de service dans les arrondissements de New York autres que Manhattan, comme Brooklyn, Queens, le Bronx et Staten Island.
+    - **Yellow Zone** : Cette valeur correspond aux zones de service à Manhattan où les taxis jaunes sont principalement actifs.
+    - **Airports** : Cela inclut les autres aéroports de New York, comme l'aéroport international John F. Kennedy (JFK) et l'aéroport de LaGuardia (LGA).
+    - **N/A** : Cette valeur signifie que la zone de service n'est pas applicable ou non spécifiée.
+
 
 
 ## Étapes du Projet

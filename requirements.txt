@@ -5,3 +5,6 @@ folium
 streamlit_folium
 pandas-gbq
 google-auth
+geopandas
+shapely
+plotly

@@ -11,4 +11,4 @@ SELECT
     total_amount, 
     payment_type
     
-FROM {{ ref('stg_yellow_taxi_agg_cleaned') }}
+FROM {{ ref('int_yellow_taxi_agg_cleaned') }}

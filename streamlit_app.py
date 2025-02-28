@@ -227,73 +227,99 @@ if selected_analysis == "Étude globale":
 
     
 elif selected_analysis == "Étude temporelle":
-    st.write("🔍 **Étude temporelle ENCORE en cours de développement...**")
+    st.write("📊 **Analyse temporelle approfondie des paiements**")
 
-    
     # Authentification BigQuery
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"]
     )
-
     client = bigquery.Client(credentials=credentials)
 
     # Chargement de la data
-
     @st.cache_data
     def fetch_payment_trends():
         query = """
-        SELECT 
-            fct.*, 
-            dim.weekday_name, 
-            dim.is_holiday, 
-            dim.is_weekend
-        FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends` fct
-        LEFT JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_time` dim
-            ON fct.date = dim.date
+SELECT 
+    fct.*, 
+    DATE(fct.tpep_pickup_datetime) AS date,
+     
+    dim.is_holiday, 
+    dim.is_weekend
+FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location` fct
+LEFT JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_time` dim
+    ON DATE(fct.tpep_pickup_datetime) = dim.date
         """
+
+#         A utiliser pourquoi pas : 
+#         SELECT 
+#   EXTRACT(HOUR FROM tpep_pickup_datetime) AS hour_of_day,
+#   COUNT(*) AS total_trips,
+#   100 * SUM(CASE WHEN payment_type = 2 THEN 1 ELSE 0 END) / COUNT(*) AS cash_percentage,
+#   100 * SUM(CASE WHEN payment_type = 1 THEN 1 ELSE 0 END) / COUNT(*) AS card_percentage,
+#   AVG(fare_amount) AS avg_fare,
+#   AVG(CASE WHEN payment_type = 1 THEN tip_amount ELSE NULL END) AS avg_tip_card
+# FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location`
+# GROUP BY hour_of_day
+# ORDER BY hour_of_day
         df = client.query(query).to_dataframe()
+        return df
 
-        # Séparer les granularités en DataFrames distincts
-        df_daily = df[df["granularity"] == "daily"]
-        df_by_day = df[df["granularity"] == "by_day"]
-        df_by_weekday = df[df["granularity"] == "by_weekday"]
+    df = fetch_payment_trends()
 
-        return df_daily, df_by_day, df_by_weekday
+    # Évolution globale des paiements avec moyenne mobile
+    st.subheader("📈 Évolution globale des paiements")
+    df_trends = df.groupby("date")[["cash_percentage", "card_percentage"]].mean().reset_index()
+    df_trends["cash_ma"] = df_trends["cash_percentage"].rolling(window=7).mean()
+    df_trends["card_ma"] = df_trends["card_percentage"].rolling(window=7).mean()
 
+    fig_trends = px.line(df_trends, x="date", y=["cash_ma", "card_ma"],
+                         labels={"value": "Pourcentage", "date": "Date"},
+                         title="Moyenne mobile des paiements en cash et carte",
+                         color_discrete_map={"cash_ma": "red", "card_ma": "blue"})
+    st.plotly_chart(fig_trends, use_container_width=True)
 
-    df_daily, df_hourly, df_weekday = fetch_payment_trends()
+    # Comparaison avant/après COVID (mars 2020)
+    df["pre_covid"] = df["date"] < "2020-03-01"
+    df_covid_trend = df.groupby(["pre_covid"])[["cash_percentage", "card_percentage"]].mean().reset_index()
+    fig_covid = px.bar(df_covid_trend, x="pre_covid", y=["cash_percentage", "card_percentage"],
+                        labels={"pre_covid": "Période", "value": "Pourcentage"},
+                        title="Comparaison avant/après COVID",
+                        barmode="group", color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
+    st.plotly_chart(fig_covid, use_container_width=True)
 
-    # 📅 **1. Évolution quotidienne des paiements**
-    st.subheader("📆 Évolution des paiements par jour")
-    fig_daily = px.line(df_daily, x="date", y=["cash_percentage", "card_percentage"], 
-                        labels={"value": "Pourcentage", "date": "Date"},
-                        title="Évolution du pourcentage des paiements en cash vs carte",
-                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
-    fig_daily.update_yaxes(ticksuffix="%")
-    st.plotly_chart(fig_daily, use_container_width=True)
-
-    # 🕒 **2. Analyse horaire des paiements**
-    st.subheader("⏳ Répartition des paiements selon l'heure de la journée")
+    # Répartition horaire des paiements
+    st.subheader("⏰ Répartition des paiements selon l'heure de la journée")
+    df_hourly = df.groupby("hour_of_day")[["cash_percentage", "card_percentage"]].mean().reset_index()
     fig_hourly = px.line(df_hourly, x="hour_of_day", y=["cash_percentage", "card_percentage"],
-                        labels={"hour_of_day": "Heure", "value": "Pourcentage"},
-                        title="Répartition des paiements en cash et carte par heure",
-                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
-    fig_hourly.update_yaxes(ticksuffix="%")
+                         labels={"hour_of_day": "Heure", "value": "Pourcentage"},
+                         title="Répartition des paiements en cash et carte par heure",
+                         markers=True)
     st.plotly_chart(fig_hourly, use_container_width=True)
 
-    # 📊 **3. Paiements selon les jours de la semaine**
-    st.subheader("📅 Répartition des paiements selon le jour de la semaine")
-    weekday_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    df_weekday["weekday"] = pd.Categorical(df_weekday["weekday"], categories=weekday_order, ordered=True)
-    df_weekday = df_weekday.sort_values("weekday")
+    # Comparaison matin (6h-10h) vs soirée (18h-23h)
+    df["time_period"] = pd.cut(df["hour_of_day"], bins=[0, 6, 10, 18, 23, 24],
+                                labels=["Nuit", "Matin", "Journée", "Soirée", "Nuit (fin)"])
+    df_period = df.groupby("time_period")[["cash_percentage", "card_percentage"]].mean().reset_index()
+    fig_period = px.bar(df_period, x="time_period", y=["cash_percentage", "card_percentage"],
+                         labels={"time_period": "Période", "value": "Pourcentage"},
+                         title="Comparaison des paiements selon la période de la journée",
+                         barmode="group")
+    st.plotly_chart(fig_period, use_container_width=True)
 
-    fig_weekday = px.line(df_weekday, x="weekday", y=["cash_percentage", "card_percentage"],
-                        labels={"weekday": "Jour de la semaine", "value": "Pourcentage"},
-                        title="Comparaison des paiements en cash et carte par jour de la semaine",
-                        markers=True, color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
-    fig_weekday.update_yaxes(ticksuffix="%")
-    st.plotly_chart(fig_weekday, use_container_width=True)
+    # Impact des événements et saisonnalité
+    st.subheader("🎊 Impact des événements et saisonnalité")
+    df_event = df[df["is_holiday"] == True].groupby("date")[["cash_percentage", "card_percentage"]].mean().reset_index()
+    fig_event = px.line(df_event, x="date", y=["cash_percentage", "card_percentage"],
+                        labels={"date": "Date", "value": "Pourcentage"},
+                        title="Évolution des paiements pendant les jours fériés")
+    st.plotly_chart(fig_event, use_container_width=True)
 
+    # Heatmap jours/heures
+    df_heatmap = df.groupby(["weekday_name", "hour_of_day"])["cash_percentage"].mean().reset_index()
+    fig_heatmap = px.density_heatmap(df_heatmap, x="hour_of_day", y="weekday_name", z="cash_percentage",
+                                     title="Heatmap des paiements en cash par jour et heure",
+                                     labels={"hour_of_day": "Heure", "weekday_name": "Jour"})
+    st.plotly_chart(fig_heatmap, use_container_width=True)
 
 elif selected_analysis == "Étude géographique":
 

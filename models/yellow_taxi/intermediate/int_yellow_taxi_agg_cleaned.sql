@@ -20,6 +20,26 @@ WITH filtered_data AS (
         AND
         improvement_surcharge = 0.3
         AND TIMESTAMP_DIFF(tpep_dropoff_datetime, tpep_pickup_datetime, HOUR) < 30
+        AND
+        trip_id IS NOT NULL AND
+        VendorID IS NOT NULL AND
+        tpep_pickup_datetime IS NOT NULL AND
+        tpep_dropoff_datetime IS NOT NULL AND
+        passenger_count IS NOT NULL AND
+        trip_distance IS NOT NULL AND
+        RatecodeID IS NOT NULL AND
+        store_and_fwd_flag IS NOT NULL AND
+        PULocationID IS NOT NULL AND
+        DOLocationID IS NOT NULL AND
+        payment_type IS NOT NULL AND
+        fare_amount IS NOT NULL AND
+        extra IS NOT NULL AND
+        mta_tax IS NOT NULL AND
+        tip_amount IS NOT NULL AND
+        tolls_amount IS NOT NULL AND
+        improvement_surcharge IS NOT NULL AND
+        total_amount IS NOT NULL AND
+        congestion_surcharge IS NOT NULL
 )
 
 SELECT 

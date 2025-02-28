@@ -9,5 +9,6 @@ SELECT
     {{ adjust_day_of_week('date_time') }} AS jour_semaine, 
     EXTRACT(MONTH FROM date_time) AS mois,
     EXTRACT(HOUR FROM date_time) AS heure,
-    {{ is_weekend('date_time') }} AS is_weekend
+    {{ is_weekend('date_time') }} AS is_weekend,
+    {{ is_holiday('date_time') }} AS is_holiday 
 FROM base

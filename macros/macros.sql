@@ -35,3 +35,13 @@
     ELSE FALSE 
   END
 {% endmacro %}
+
+{% macro is_holiday(date_column) %}
+    CASE
+        WHEN EXTRACT(DATE FROM {{ date_column }}) IN (
+            '2019-01-01', '2019-01-21', '2019-02-18', '2019-05-27', '2019-07-04', '2019-09-02', '2019-10-14', '2019-11-11', '2019-11-28', '2019-12-25',
+            '2020-01-01', '2020-01-20', '2020-02-17', '2020-05-25'
+        ) THEN TRUE
+        ELSE FALSE
+    END
+{% endmacro %}

@@ -87,3 +87,16 @@ FROM {{ ref('stg_yellow_taxi_agg') }}
 
 
 -- On se rend compte que les valeures nulles sont sur la meme ligne donc on va les enlever lors de la concaténation des tables sources (certainement le payment type 6 : voided trip)
+
+
+-- J'ai aussi fait une requte pour verif les zones pas tres pertinentes dans les zones du lookup avec la reqeute suivante : 
+
+-- SELECT 
+--     COUNT(*) AS trips_with_NV,
+--     (COUNT(*) * 100.0) / (SELECT COUNT(*) FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location`) AS percentage_of_total
+-- FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location` f
+-- JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_location` l1 ON f.PULocationID = l1.LocationID
+-- JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_location` l2 ON f.DOLocationID = l2.LocationID
+-- WHERE l1.Zone = 'NV' OR l2.Zone = 'NV';
+
+-- Pour NV on a moins d'un pourcent donc je l'enleve

@@ -8,6 +8,6 @@ SELECT
   SUM(total_amount - tip_amount) AS total_revenue_without_tips,
   AVG(total_amount) AS avg_fare_with_tips,
   AVG(total_amount - tip_amount) AS avg_fare_without_tips
-FROM {{ ref('stg_yellow_taxi_agg_cleaned') }}
+FROM {{ ref('int_yellow_taxi_agg_cleaned') }}
 GROUP BY payment_type
 ORDER BY total_revenue_with_tips DESC

@@ -5,7 +5,7 @@ WITH stg_temp_location AS (
         Zone,
         service_zone
     FROM 
-        {{ ref('stg_yellow_taxi_location') }}
+        {{ ref('int_yellow_taxi_location') }}
 )
 
 SELECT 

@@ -241,19 +241,25 @@ elif selected_analysis == "Étude temporelle":
 
     @st.cache_data
     def fetch_payment_trends():
-        query_daily = """
-        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_by_day`
+        query = """
+        SELECT 
+            fct.*, 
+            dim.weekday_name, 
+            dim.is_holiday, 
+            dim.is_weekend
+        FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends` fct
+        LEFT JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_time` dim
+            ON fct.date = dim.date
         """
-        query_hourly = """
-        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_hourly`
-        """
-        query_weekday = """
-        SELECT * FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_trends_weekday`
-        """
-        df_daily = client.query(query_daily).to_dataframe()
-        df_hourly = client.query(query_hourly).to_dataframe()
-        df_weekday = client.query(query_weekday).to_dataframe()
-        return df_daily, df_hourly, df_weekday
+        df = client.query(query).to_dataframe()
+
+        # Séparer les granularités en DataFrames distincts
+        df_daily = df[df["granularity"] == "daily"]
+        df_by_day = df[df["granularity"] == "by_day"]
+        df_by_weekday = df[df["granularity"] == "by_weekday"]
+
+        return df_daily, df_by_day, df_by_weekday
+
 
     df_daily, df_hourly, df_weekday = fetch_payment_trends()
 

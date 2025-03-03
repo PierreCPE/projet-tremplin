@@ -14,6 +14,9 @@ import pydeck as pdk
 import random
 import plotly.express as px
 import plotly.graph_objects as go
+from shapely.geometry import shape
+from streamlit_folium import st_folium
+
 
 st.set_page_config(
     page_title="Étude des paiements Taxi NYC",
@@ -323,8 +326,8 @@ elif selected_analysis == "Étude temporelle":
     # Évolution globale des paiements
     st.subheader("📈 Évolution globale des paiements")
     df_trends = df.groupby("date")[["cash_percentage", "card_percentage"]].mean().reset_index()
-    df_trends["cash_ma"] = df_trends["cash_percentage"].rolling(window=7).mean()
-    df_trends["card_ma"] = df_trends["card_percentage"].rolling(window=7).mean()
+    df_trends["cash_ma"] = df_trends["cash_percentage"].rolling(window=12).mean()
+    df_trends["card_ma"] = df_trends["card_percentage"].rolling(window=12).mean()
 
     fig_trends = px.line(df_trends, x="date", y=["cash_ma", "card_ma"],
                         labels={"value": "Pourcentage", "date": "Date"},
@@ -351,8 +354,8 @@ elif selected_analysis == "Étude temporelle":
     st.plotly_chart(fig_hourly, use_container_width=True)
 
     # Comparaison des paiements par période de la journée
-    df["time_period"] = pd.cut(df["hour_of_day"], bins=[0, 6, 10, 18, 23, 24],
-                            labels=["Nuit", "Matin", "Journée", "Soirée", "Nuit (fin)"])
+    df["time_period"] = pd.cut(df["hour_of_day"], bins=[0, 6, 10, 18, 23],
+                            labels=["Nuit", "Matin", "Journée", "Soirée"])
     df_period = df.groupby("time_period")[["cash_percentage", "card_percentage"]].mean().reset_index()
     fig_period = px.bar(df_period, x="time_period", y=["cash_percentage", "card_percentage"],
                         labels={"time_period": "Période", "value": "Pourcentage"},
@@ -420,16 +423,48 @@ elif selected_analysis == "Étude géographique":
 
     client = bigquery.Client(credentials=credentials)
 
+    # @st.cache_data
+    # def load_shapefile():
+    #     shapefile_path = "../data_geo/ZillowNeighborhoods-NY.shp"
+    #     return gpd.read_file(shapefile_path)
+
+    # gdf = load_shapefile()
+
+    # # Filtrer uniquement les zones de la ville de New York
+    # gdf = gdf[gdf["City"] == "New York"]
+
+    if "event_data" not in st.session_state:
+        st.session_state.event_data = None
+
+    # Requête BigQuery pour récupérer les données de geographie de zones de paiement
+
+
+
     @st.cache_data
-    def load_shapefile():
-        shapefile_path = "../data_geo/ZillowNeighborhoods-NY.shp"
-        return gpd.read_file(shapefile_path)
+    def fetch_zones_data():
+        query = """
+        SELECT 
+            OBJECTID, 
+            Shape_Leng, 
+            Shape_Area, 
+            zone, 
+            LocationID, 
+            borough, 
+            ST_AsGeoJSON(st_geogfromtext(the_geom)) as geometry
+        FROM `projet-tremplin-451615.dbt_pgosson.taxi_zone_geo_csv`
+        """
+        return client.query(query).to_dataframe()
 
-    gdf = load_shapefile()
+    gdf = fetch_zones_data()
 
-    # Filtrer uniquement les zones de la ville de New York
-    gdf = gdf[gdf["City"] == "New York"]
-    
+    # Convertir la colonne geometry en GeoDataFrame
+    gdf['geometry'] = gdf['geometry'].apply(lambda x: shape(json.loads(x)))
+    gdf = gpd.GeoDataFrame(gdf, geometry='geometry')
+
+    # Définir le CRS sur le GeoDataFrame
+    gdf.set_crs(epsg=4326, inplace=True)
+
+
     @st.cache_data
     def fetch_taxi_data():
         query = """
@@ -451,39 +486,66 @@ elif selected_analysis == "Étude géographique":
 
     df_taxi = fetch_taxi_data()
 
-    # Fonction pour générer des couleurs aléatoires
-    def random_color():
-        return [random.randint(0, 255) for _ in range(3)] + [100]  # Couleur RGB avec transparence
-
     st.title("Analyse des flux de paiements 💳💵")
 
-    # Appliquer des couleurs aléatoires aux zones
-    gdf["color"] = gdf.apply(lambda x: random_color(), axis=1)
 
-    # Affichage de la carte
-    layer = pdk.Layer(
-        "GeoJsonLayer",
-        data=gdf,
-        get_fill_color="color",  # Utiliser la colonne des couleurs générées
-        get_line_color=[204, 204, 0],  # Jaune plus sombre
-        pickable=True,
+    # Initialisation de session_state
+    if "selected_pickup" not in st.session_state:
+        st.session_state.selected_pickup = None
+    if "selected_dropoff" not in st.session_state:
+        st.session_state.selected_dropoff = None
+
+    # Sélection via dropdown
+    pickup_zone = st.selectbox(
+        "Sélectionnez la zone de départ",
+        gdf["zone"].unique(),
+        index=list(gdf["zone"].unique()).index(st.session_state.selected_pickup) if st.session_state.selected_pickup in gdf["zone"].unique() else 0,
+        key="last_selected_pickup",
     )
 
-    view_state = pdk.ViewState(latitude=40.7128, longitude=-74.0060, zoom=10, pitch=40)
-    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+    dropoff_zone = st.selectbox(
+        "Sélectionnez la zone d'arrivée",
+        gdf["zone"].unique(),
+        index=list(gdf["zone"].unique()).index(st.session_state.selected_dropoff) if st.session_state.selected_dropoff in gdf["zone"].unique() else 0,
+        key="last_selected_dropoff",
+    )
 
-    # Sélection des zones
-    pickup_zone = st.selectbox("Sélectionnez la zone de départ", df_taxi["pickup_zone"].unique())
-    dropoff_zone = st.selectbox("Sélectionnez la zone d'arrivée", df_taxi["dropoff_zone"].unique())
+    # Mettre à jour les sélections dans session_state
+    st.session_state.selected_pickup = pickup_zone
+    st.session_state.selected_dropoff = dropoff_zone
+
+    # Création de la carte Folium
+    m = folium.Map(location=[40.7128, -74.0060], zoom_start=10, control_scale=True)
+
+    for _, row in gdf.iterrows():
+        folium.GeoJson(
+            row['geometry'],
+            name=row['zone'],
+            tooltip=row['zone'],
+            style_function=lambda x, row=row: {
+                'fillColor': 'green' if row['zone'] == st.session_state.selected_pickup else 'red' if row['zone'] == st.session_state.selected_dropoff else 'blue',
+                'color': 'black',
+                'weight': 1,
+                'fillOpacity': 0.5
+            },
+            highlight_function=lambda x: {'weight': 3, 'color': 'yellow'},
+            popup=row['zone'],
+            control=False,
+        ).add_to(m)
+
+    folium_static(m, width=1400, height=600)
+
+    st.write(f"**Pickup sélectionné** : {st.session_state.selected_pickup}")
+    st.write(f"**Dropoff sélectionné** : {st.session_state.selected_dropoff}")
 
     # Filtrer les flux de paiement pour les zones sélectionnées
     filtered_df = df_taxi[
         (df_taxi["pickup_zone"] == pickup_zone) & (df_taxi["dropoff_zone"] == dropoff_zone)
     ]
 
-    # Fusion des données de géométrie
-    gdf = gdf.merge(df_taxi.groupby("pickup_zone")["trip_count"].sum().reset_index(), 
-                    left_on="Name", right_on="pickup_zone", how="left")
+    # # Fusion des données de géométrie
+    # gdf = gdf.merge(df_taxi.groupby("pickup_zone")["trip_count"].sum().reset_index(), 
+    #                 left_on="Name", right_on="pickup_zone", how="left")
 
 
 

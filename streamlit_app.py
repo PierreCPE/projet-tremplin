@@ -81,7 +81,7 @@ st.markdown("""
         color: #BB86FC;
         font-size: 36px;
     }
-
+            
     /* Fond noir pour le tableau */
     .dataframe {
         background-color: #1E1E1E;
@@ -112,6 +112,17 @@ with st.sidebar:
     selected_analysis = st.selectbox('📊 Sélectionner un type d\'analyse', analysis_point)
 
     st.write(f"🔍 **Vue sélectionnée :** {selected_analysis}")
+
+    st.markdown(f"""
+    <div class="kpi-container" style="flex-direction: column; align-items: center;">
+        <div class="kpi-box" style="background-color: #28C6FF; width: 100%; margin-bottom: 10px;">
+            <div class="kpi-label" style="color: white; font-size: 24px;">💳 CARD</div>
+        </div>
+        <div class="kpi-box" style="background-color: #FF9810; width: 100%;">
+            <div class="kpi-label" style="color: white; font-size: 24px;">💵 CASH</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Affichage en fonction de l'analyse sélectionnée:
 
@@ -148,15 +159,15 @@ if selected_analysis == "Étude globale":
     st.markdown(f"""
         <div class="kpi-container">
             <div class="kpi-box">
-                <div class="kpi-label">🛺 Trajets</div>
+                <div class="kpi-label" style="color: white;">🛺 Trajets</div>
                 <div class="kpi-value">{format_large_number(df["total_trips"].sum())}</div>
             </div>
             <div class="kpi-box">
-                <div class="kpi-label">💵 Revenu</div>
+                <div class="kpi-label" style="color: white;">💵 Revenu</div>
                 <div class="kpi-value">${format_large_number(df["total_revenue"].sum())}</div>
             </div>
             <div class="kpi-box">
-                <div class="kpi-label">💲 Tarif Moyen</div>
+                <div class="kpi-label" style="color: white;">💲 Tarif Moyen</div>
                 <div class="kpi-value">${df['total_revenue'].sum() / df['total_trips'].sum():.2f}</div>
             </div>
         </div>
@@ -170,7 +181,15 @@ if selected_analysis == "Étude globale":
 
     col1, col2, col3 = st.columns([33, 66, 33])  # Pour centrer les graphes
 
-    colors = px.colors.qualitative.Set2  
+    color_mapping = {
+        "Cash": "#FF9810",
+        "Credit card": "#28C6FF",
+        "No charge": "#FFD700",
+        "Dispute": "#FF4500",
+        "Unknown": "#808080"
+    }
+
+
     with col2:
         st.write("🧾 **Nombre de trajets par mode de paiement**")
         df["formatted_trips"] = df["total_trips"].apply(format_large_number)
@@ -178,7 +197,7 @@ if selected_analysis == "Étude globale":
         fig_trips = px.bar(df, x="total_trips", y="payment_type_name", 
                         orientation="h", text="formatted_trips",
                         title="Nombre de trajets par mode de paiement",
-                        color="payment_type_name", color_discrete_sequence=colors)
+                        color="payment_type_name", color_discrete_map=color_mapping)
         fig_trips.update_traces(textposition="inside")
         fig_trips.update_xaxes(title_text="Nombre de trajets", tickformat=",")
         st.plotly_chart(fig_trips, use_container_width=True)
@@ -190,7 +209,7 @@ if selected_analysis == "Étude globale":
         fig_revenue = px.bar(df, x="total_revenue", y="payment_type_name", 
                             orientation="h", text="formatted_revenue",
                             title="Revenu par mode de paiement",
-                            color="payment_type_name", color_discrete_sequence=colors)
+                            color="payment_type_name", color_discrete_map=color_mapping)
         fig_revenue.update_traces(textposition="inside")
         fig_revenue.update_xaxes(title_text="Revenu ($)", tickformat=",")
         st.plotly_chart(fig_revenue, use_container_width=True)
@@ -199,14 +218,15 @@ if selected_analysis == "Étude globale":
     st.subheader("📌 Répartition des Paiements")
     col1, col2 = st.columns([1, 1])
 
-    colors = plt.cm.Paired.colors
+    # Couleurs pour les graphiques en secteurs
 
+    color_sequence = ["#28C6FF", "#FF9810", "#FFD700", "#FF4500", "#808080"]
     # 🔄 **Graphique des trajets**
     with col1:
         st.write("🧾 **Répartition des trajets**")
         fig_trips = px.pie(df, values="total_trips", names="payment_type_name",
                         title="Répartition des trajets par mode de paiement",
-                        hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
+                        hole=0.4, color_discrete_sequence=color_sequence)
         st.plotly_chart(fig_trips, use_container_width=True)
 
     # 💰 **Graphique des revenus**
@@ -214,7 +234,7 @@ if selected_analysis == "Étude globale":
         st.write("💰 **Répartition des revenus**")
         fig_revenue = px.pie(df, values="total_revenue", names="payment_type_name",
                             title="Répartition des revenus par mode de paiement",
-                            hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
+                            hole=0.4, color_discrete_sequence=color_sequence)
         st.plotly_chart(fig_revenue, use_container_width=True)
 
     # 📋 **Comparaison des paiements**
@@ -227,99 +247,167 @@ if selected_analysis == "Étude globale":
 
     
 elif selected_analysis == "Étude temporelle":
-    st.write("📊 **Analyse temporelle approfondie des paiements**")
 
+
+    
     # Authentification BigQuery
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"]
     )
     client = bigquery.Client(credentials=credentials)
 
-    # Chargement de la data
+    # Chargement de la data avec la requête optimisée
     @st.cache_data
     def fetch_payment_trends():
         query = """
-SELECT 
-    fct.*, 
-    DATE(fct.tpep_pickup_datetime) AS date,
-     
-    dim.is_holiday, 
-    dim.is_weekend
-FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location` fct
-LEFT JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_time` dim
-    ON DATE(fct.tpep_pickup_datetime) = dim.date
+            WITH time_agg AS (
+                SELECT DISTINCT 
+                    date,
+                    MAX(is_holiday) AS is_holiday,  
+                    MAX(is_weekend) AS is_weekend
+                FROM `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_time`
+                GROUP BY date
+            ),
+
+            agg_fct AS (
+                SELECT 
+                    DATE(tpep_pickup_datetime) AS date,
+                    EXTRACT(HOUR FROM tpep_pickup_datetime) AS hour_of_day,
+                    COUNT(*) AS total_trips,
+                    100 * SUM(CASE WHEN payment_type = 2 THEN 1 ELSE 0 END) / COUNT(*) AS cash_percentage,
+                    100 * SUM(CASE WHEN payment_type = 1 THEN 1 ELSE 0 END) / COUNT(*) AS card_percentage,
+                    COALESCE(time_agg.is_holiday, FALSE) AS is_holiday 
+                FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location` fct
+                LEFT JOIN time_agg
+                    ON DATE(fct.tpep_pickup_datetime) = time_agg.date  
+                
+                GROUP BY date, hour_of_day, is_holiday
+            )
+
+            SELECT * FROM agg_fct
+            ORDER BY date, hour_of_day;
+
         """
 
-#         A utiliser pourquoi pas : 
-#         SELECT 
-#   EXTRACT(HOUR FROM tpep_pickup_datetime) AS hour_of_day,
-#   COUNT(*) AS total_trips,
-#   100 * SUM(CASE WHEN payment_type = 2 THEN 1 ELSE 0 END) / COUNT(*) AS cash_percentage,
-#   100 * SUM(CASE WHEN payment_type = 1 THEN 1 ELSE 0 END) / COUNT(*) AS card_percentage,
-#   AVG(fare_amount) AS avg_fare,
-#   AVG(CASE WHEN payment_type = 1 THEN tip_amount ELSE NULL END) AS avg_tip_card
-# FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location`
-# GROUP BY hour_of_day
-# ORDER BY hour_of_day
         df = client.query(query).to_dataframe()
         return df
 
     df = fetch_payment_trends()
 
-    # Évolution globale des paiements avec moyenne mobile
+    # KPI pour les paiements en cash et par carte
+    st.header("🚀 Indicateurs Clés de Performance (KPI)")
+
+    cash_percentage = df["cash_percentage"].mean()
+    card_percentage = df["card_percentage"].mean()
+    # Conversion de ma colonne date en datetime
+    df["date"] = pd.to_datetime(df["date"])
+
+    st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-box" style="background-color: #FF9810;">
+                <div class="kpi-label" style="color: white;">💵 CASH</div>
+                <div class="kpi-value">{cash_percentage:.2f}%</div>
+                <div class="kpi-description">Proportion des paiements en cash par rapport au nombre total de trajets</div>
+            </div>
+            <div class="kpi-box" style="background-color: #28C6FF;">
+                <div class="kpi-label" style="color: white;">💳 CARD</div>
+                <div class="kpi-value">{card_percentage:.2f}%</div>
+                <div class="kpi-description">Proportion des paiements par carte par rapport au nombre total de trajets</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Affichage des graphiques dans Streamlit
+    st.write("📊 **Analyse temporelle approfondie des paiements**")
+
+    # Évolution globale des paiements
     st.subheader("📈 Évolution globale des paiements")
     df_trends = df.groupby("date")[["cash_percentage", "card_percentage"]].mean().reset_index()
     df_trends["cash_ma"] = df_trends["cash_percentage"].rolling(window=7).mean()
     df_trends["card_ma"] = df_trends["card_percentage"].rolling(window=7).mean()
 
     fig_trends = px.line(df_trends, x="date", y=["cash_ma", "card_ma"],
-                         labels={"value": "Pourcentage", "date": "Date"},
-                         title="Moyenne mobile des paiements en cash et carte",
-                         color_discrete_map={"cash_ma": "red", "card_ma": "blue"})
+                        labels={"value": "Pourcentage", "date": "Date"},
+                        title="Moyenne mobile des paiements en cash et carte",
+                        color_discrete_map={"cash_ma": "#FF9810", "card_ma": "#28C6FF"})
     st.plotly_chart(fig_trends, use_container_width=True)
 
-    # Comparaison avant/après COVID (mars 2020)
-    df["pre_covid"] = df["date"] < "2020-03-01"
+    # Comparaison avant/après COVID
+    df["pre_covid"] = df["date"] < pd.to_datetime("2020-03-01")
     df_covid_trend = df.groupby(["pre_covid"])[["cash_percentage", "card_percentage"]].mean().reset_index()
     fig_covid = px.bar(df_covid_trend, x="pre_covid", y=["cash_percentage", "card_percentage"],
-                        labels={"pre_covid": "Période", "value": "Pourcentage"},
-                        title="Comparaison avant/après COVID",
-                        barmode="group", color_discrete_map={"cash_percentage": "red", "card_percentage": "blue"})
+                    labels={"pre_covid": "Période", "value": "Pourcentage"},
+                    title="Comparaison avant/après COVID",
+                    barmode="group", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
     st.plotly_chart(fig_covid, use_container_width=True)
 
-    # Répartition horaire des paiements
+    # Répartition des paiements par heure
     st.subheader("⏰ Répartition des paiements selon l'heure de la journée")
     df_hourly = df.groupby("hour_of_day")[["cash_percentage", "card_percentage"]].mean().reset_index()
     fig_hourly = px.line(df_hourly, x="hour_of_day", y=["cash_percentage", "card_percentage"],
-                         labels={"hour_of_day": "Heure", "value": "Pourcentage"},
-                         title="Répartition des paiements en cash et carte par heure",
-                         markers=True)
+                        labels={"hour_of_day": "Heure", "value": "Pourcentage"},
+                        title="Répartition des paiements en cash et carte par heure",
+                        markers=True, color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
     st.plotly_chart(fig_hourly, use_container_width=True)
 
-    # Comparaison matin (6h-10h) vs soirée (18h-23h)
+    # Comparaison des paiements par période de la journée
     df["time_period"] = pd.cut(df["hour_of_day"], bins=[0, 6, 10, 18, 23, 24],
-                                labels=["Nuit", "Matin", "Journée", "Soirée", "Nuit (fin)"])
+                            labels=["Nuit", "Matin", "Journée", "Soirée", "Nuit (fin)"])
     df_period = df.groupby("time_period")[["cash_percentage", "card_percentage"]].mean().reset_index()
     fig_period = px.bar(df_period, x="time_period", y=["cash_percentage", "card_percentage"],
-                         labels={"time_period": "Période", "value": "Pourcentage"},
-                         title="Comparaison des paiements selon la période de la journée",
-                         barmode="group")
+                        labels={"time_period": "Période", "value": "Pourcentage"},
+                        title="Comparaison des paiements selon la période de la journée",
+                        barmode="group", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
     st.plotly_chart(fig_period, use_container_width=True)
 
-    # Impact des événements et saisonnalité
+    # Impact des événements (jours fériés)
     st.subheader("🎊 Impact des événements et saisonnalité")
     df_event = df[df["is_holiday"] == True].groupby("date")[["cash_percentage", "card_percentage"]].mean().reset_index()
+
+    # Créer le graphique
     fig_event = px.line(df_event, x="date", y=["cash_percentage", "card_percentage"],
                         labels={"date": "Date", "value": "Pourcentage"},
-                        title="Évolution des paiements pendant les jours fériés")
+                        title="Évolution des paiements pendant les jours fériés",
+                        color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
+
+    # Ajouter des lignes verticales pour chaque jour férié
+    for holiday_date in df_event["date"]:
+        fig_event.add_shape(
+            type="line",
+            x0=holiday_date, y0=0, x1=holiday_date, y1=1,
+            xref="x", yref="paper",
+            line=dict(color="#003189", width=2, dash="dash")
+        )
+
     st.plotly_chart(fig_event, use_container_width=True)
 
     # Heatmap jours/heures
+    df["weekday_name"] = df["date"].dt.strftime("%A")
+
+    # Définir l'ordre des jours de la semaine
+    weekday_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+    # Convertir la colonne weekday_name en type catégoriel avec l'ordre défini
+    df["weekday_name"] = pd.Categorical(df["weekday_name"], categories=weekday_order, ordered=True)
+
     df_heatmap = df.groupby(["weekday_name", "hour_of_day"])["cash_percentage"].mean().reset_index()
+
+    # Inverser l'ordre des jours de la semaine pour la heatmap
+    df_heatmap["weekday_name"] = pd.Categorical(df_heatmap["weekday_name"], categories=weekday_order[::-1], ordered=True)
+
+    # Définir une échelle de couleurs personnalisée allant du plus clair au plus foncé en utilisant la couleur de base #FF9810
+    colorscale = [
+        [0, "rgba(255, 152, 16, 0.1)"],  # Plus clair
+        [1, "rgba(255, 152, 16, 1)"]     # Plus foncé
+    ]
+
     fig_heatmap = px.density_heatmap(df_heatmap, x="hour_of_day", y="weekday_name", z="cash_percentage",
-                                     title="Heatmap des paiements en cash par jour et heure",
-                                     labels={"hour_of_day": "Heure", "weekday_name": "Jour"})
+                                    title="Heatmap des paiements en cash par jour et heure",
+                                    labels={"hour_of_day": "Heure", "weekday_name": "Jour"},
+                                    color_continuous_scale=colorscale)
     st.plotly_chart(fig_heatmap, use_container_width=True)
+
+
 
 elif selected_analysis == "Étude géographique":
 
@@ -421,26 +509,23 @@ elif selected_analysis == "Étude géographique":
 
         cols = st.columns([1, 1])
 
+    color_sequence = ["#28C6FF", "#FF9810", "#FFD700", "#FF4500", "#808080"]
+
+
     with cols[0]:
         payment_type = df_taxi["payment_type"].unique()
         
         fig = px.pie(filtered_df, values='trip_count', names='payment_type_name',
                      title=f'Répartition des paiements entre {pickup_zone} et {dropoff_zone}',
-                     height=300, width=200)
+                     height=300, width=200, color_discrete_sequence=color_sequence)
         fig.update_layout(margin=dict(l=20, r=20, t=30, b=0))
         st.plotly_chart(fig, use_container_width=True)
 
     with cols[1]:
-        st.write("📍 **Légende des types de paiement**")
-        colors = px.colors.qualitative.Plotly
-        legend_html = "<ul>"
-        for i, (payment_type, name) in enumerate(payment_type_mapping.items()):
-            legend_html += f"<li style='color:{colors[i]};'>{name}</li>"
-        legend_html += f"<li style='color:{colors[len(payment_type_mapping)]};'>Other</li></ul>"
-        st.markdown(legend_html, unsafe_allow_html=True)
+        st.write("💰 Moyenne des paiements par type :")
+        st.dataframe(filtered_df[["payment_type_name", "avg_fare", "avg_tip"]])
 
-    st.write("💰 Moyenne des paiements par type :")
-    st.dataframe(filtered_df[["payment_type_name", "avg_fare", "avg_tip"]])
+
 
     # Graphique pour les zones de service "Airports" et "EWR"
     st.write("✈️ **Comparaison des paiements : Aéroports vs Autres zones**")
@@ -483,7 +568,8 @@ elif selected_analysis == "Étude géographique":
         if not df_airport.empty:
             fig_airport_pie = px.pie(
                 df_airport, values="trip_count", names="payment_type_name",
-                title="Aéroports : Nombre de trajets par mode de paiement"
+                title="Aéroports : Nombre de trajets par mode de paiement",
+                color_discrete_sequence=color_sequence
             )
             st.plotly_chart(fig_airport_pie, use_container_width=True)
 
@@ -492,7 +578,8 @@ elif selected_analysis == "Étude géographique":
         if not df_other.empty:
             fig_other_pie = px.pie(
                 df_other, values="trip_count", names="payment_type_name",
-                title="Autres zones : Nombre de trajets par mode de paiement"
+                title="Autres zones : Nombre de trajets par mode de paiement",
+                color_discrete_sequence=color_sequence
             )
             st.plotly_chart(fig_other_pie, use_container_width=True)
 

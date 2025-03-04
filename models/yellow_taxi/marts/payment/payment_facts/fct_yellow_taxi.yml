@@ -41,14 +41,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: 
-                - 1
-                - 2
-                - 3
-                - 4
-                - 5
-                - 6
-              quote: false
+              values: [1, 2, 3, 4, 5, 6]
 
   - name: fct_yellow_taxi_payment_summary
     description: "This model is a fact table containing the payment summary information for yellow taxi trips."
@@ -58,14 +51,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: 
-                - 1
-                - 2
-                - 3
-                - 4
-                - 5
-                - 6
-              quote: false
+              values: [1, 2, 3, 4, 5, 6]
       - name: payment_type_name
         description: "Name of the payment method used for the trip."
         tests:

@@ -47,7 +47,6 @@ models:
               - 5
               - 6
               - 7
-            quote: false
       - name: mois
         description: "Month of the trip."
         tests:
@@ -66,7 +65,6 @@ models:
               - 10
               - 11
               - 12
-            quote: false
       - name: heure
         description: "Hour of the trip."
         tests:
@@ -97,7 +95,6 @@ models:
               - 21
               - 22
               - 23
-            quote: false
 
       - name: is_weekend
         description: "Flag indicating if the trip occurred on a weekend."

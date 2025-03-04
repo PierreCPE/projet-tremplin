@@ -42,7 +42,13 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4, 5, 6]
+              values: 
+                - 1
+                - 2
+                - 3
+                - 4
+                - 5
+                - 6
       - name: fare_amount
         description: "Fare amount for the trip."
         tests:

@@ -9,21 +9,21 @@ models:
         tests:
           - unique
           - not_null
-      - name: vendor_id
+      - name: VendorID
         description: "ID of the vendor."
         tests:
           - not_null:
               severity: warn
               warn_if: ">0.15"
               error_if: ">0.5"
-      - name: pickup_datetime
+      - name: tpep_pickup_datetime
         description: "Date and time when the passenger was picked up."
         tests:
           - not_null:
               severity: warn
               warn_if: ">0.15"
               error_if: ">0.5"
-      - name: dropoff_datetime
+      - name: tpep_dropoff_datetime
         description: "Date and time when the passenger was dropped off."
         tests:
           - not_null:
@@ -44,7 +44,7 @@ models:
               severity: warn
               warn_if: ">0.15"
               error_if: ">0.5"
-      - name: rate_code
+      - name: RatecodeID
         description: "Rate code for the trip."
         tests:
           - not_null:
@@ -66,7 +66,13 @@ models:
               warn_if: ">0.15"
               error_if: ">0.5"
           - accepted_values:
-              values: [1, 2, 3, 4, 5, 6]
+              values: 
+                - 1
+                - 2
+                - 3
+                - 4
+                - 5
+                - 6
               severity: error
       - name: fare_amount
         description: "Fare amount for the trip."
@@ -112,6 +118,22 @@ models:
               error_if: ">0.5"
       - name: total_amount
         description: "Total amount for the trip."
+        tests:
+          - not_null:
+              severity: warn
+              warn_if: ">0.15"
+              error_if: ">0.5"
+
+      - name: PULocationID
+        description: "ID of the pickup location."
+        tests:
+          - not_null:
+              severity: warn
+              warn_if: ">0.15"
+              error_if: ">0.5"
+
+      - name: DOLocationID
+        description: "ID of the dropoff location."
         tests:
           - not_null:
               severity: warn

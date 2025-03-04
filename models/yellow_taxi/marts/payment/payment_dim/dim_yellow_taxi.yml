@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: dim_yellow_taxi_location
+    description: "This model is a dimension table containing location information for yellow taxi trips more accurately taxis zones."
+    columns:
+      - name: LocationID
+        description: "ID of the location."
+      - name: Borough
+        description: "Borough where the location is situated."
+      - name: Zone
+        description: "Zone of the location."
+      - name: service_zone
+        description: "Service zone of the location."
+
+  - name: dim_yellow_taxi_time
+    description: "This model is a dimension table containing time information for yellow taxi trips."
+    columns:
+      - name: date_time
+        description: "Date and time of the trip."
+      - name: date
+        description: "Date of the trip."
+      - name: jour_semaine
+        description: "Day of the week of the trip."
+      - name: mois
+        description: "Month of the trip."
+      - name: heure
+        description: "Hour of the trip."
+      - name: is_weekend
+        description: "Flag indicating if the trip occurred on a weekend."
+      - name: is_holiday
+        description: "Flag indicating if the trip occurred on a holiday."

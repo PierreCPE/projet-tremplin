@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: fct_yellow_taxi_payment_location
+    description: "This model is a fact table containing the payment and location information for yellow taxi trips."
+    columns:
+      - name: tpep_pickup_datetime
+        description: "Date and time when the passenger was picked up."
+      - name: tpep_dropoff_datetime
+        description: "Date and time when the passenger was dropped off."
+      - name: PULocationID
+        description: "ID of the pickup location."
+      - name: DOLocationID
+        description: "ID of the dropoff location."
+      - name: trip_distance
+        description: "Distance of the trip in miles."
+      - name: fare_amount
+        description: "Fare amount for the trip."
+      - name: tip_amount
+        description: "Tip amount for the trip."
+      - name: total_amount
+        description: "Total amount for the trip."
+      - name: payment_type
+        description: "Payment method used for the trip."
+
+  - name: fct_yellow_taxi_payment_summary
+    description: "This model is a fact table containing the payment summary information for yellow taxi trips."
+    columns:
+      - name: payment_type
+        description: "Payment method used for the trip."
+      - name: payment_type_name
+        description: "Name of the payment method used for the trip."
+      - name: total_trips
+        description: "Total number of trips."
+      - name: total_revenue_with_tips
+        description: "Total revenue including tips."
+      - name: total_revenue_without_tips
+        description: "Total revenue excluding tips."
+      - name: avg_fare_with_tips
+        description: "Average fare including tips."
+      - name: avg_fare_without_tips
+        description: "Average fare excluding tips."

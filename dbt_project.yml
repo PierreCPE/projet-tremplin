@@ -42,5 +42,45 @@ models:
     marts:
       payment:
         +materialized: table
+        +tests:
+          - not_null:
+              severity: error
+              error_if: ">=0.01"
     staging:
       +materialized: view
+      +tests:
+        - name: stg_yellow_taxi_agg
+          tests:
+            - unique:
+                columns: ['trip_id']
+                severity: error
+                error_if: ">=0.01"
+                                
+            - not_null:
+                columns: ['trip_id']
+                severity: error
+                error_if: ">=0.01"
+                
+        - not_null:
+            severity: warn
+            warn_if: ">=0.3"
+            # error_if: ">0.5"
+        - accepted_values:
+            column_name: payment_type
+            values: [1, 2, 3, 4, 5, 6]
+            severity: error
+
+    intermediate:
+      +materialized: view
+      +tests:
+        - accepted_values:
+            column_name: payment_type
+            values: [1, 2, 3, 4, 5, 6]
+            severity: error
+        - not_null:
+            severity: error
+            error_if: ">=0.01"
+        - unique:
+            columns: ['trip_id']
+            severity: error
+            error_if: ">=0.01"

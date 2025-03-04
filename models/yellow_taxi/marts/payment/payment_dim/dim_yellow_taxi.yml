@@ -6,27 +6,65 @@ models:
     columns:
       - name: LocationID
         description: "ID of the location."
+        tests:
+          - not_null
+          - unique
       - name: Borough
         description: "Borough where the location is situated."
+        tests:
+          - not_null
       - name: Zone
         description: "Zone of the location."
+        tests:
+          - not_null
       - name: service_zone
         description: "Service zone of the location."
+        tests:
+          - not_null
 
   - name: dim_yellow_taxi_time
     description: "This model is a dimension table containing time information for yellow taxi trips."
     columns:
       - name: date_time
         description: "Date and time of the trip."
+        tests:
+          - not_null
+          - unique
       - name: date
         description: "Date of the trip."
+        tests:
+          - not_null
       - name: jour_semaine
         description: "Day of the week of the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7]
       - name: mois
         description: "Month of the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
       - name: heure
         description: "Hour of the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
       - name: is_weekend
         description: "Flag indicating if the trip occurred on a weekend."
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+              - true
+              - false
       - name: is_holiday
         description: "Flag indicating if the trip occurred on a holiday."
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+              - true
+              - false

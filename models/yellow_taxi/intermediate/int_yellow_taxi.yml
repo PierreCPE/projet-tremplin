@@ -6,33 +6,68 @@ models:
     columns:
       - name: trip_id
         description: "ID of the trip starting with the year_month of the table it came from."
+        tests:
+          - unique
+          - not_null
       - name: vendor_id
         description: "ID of the vendor."
+        tests:
+          - not_null
       - name: pickup_datetime
         description: "Date and time when the passenger was picked up."
+        tests:
+          - not_null
       - name: dropoff_datetime
         description: "Date and time when the passenger was dropped off."
+        tests:
+          - not_null
       - name: passenger_count
         description: "Number of passengers in the taxi."
+        tests:
+          - not_null
       - name: trip_distance
         description: "Distance of the trip in miles."
+        tests:
+          - not_null
       - name: rate_code
         description: "Rate code for the trip."
+        tests:
+          - not_null
       - name: store_and_fwd_flag
         description: "Flag indicating if the trip record was held in vehicle memory before sending to the vendor."
+        tests:
+          - not_null
       - name: payment_type
         description: "Payment method used for the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
       - name: fare_amount
         description: "Fare amount for the trip."
+        tests:
+          - not_null
       - name: extra
         description: "Extra charges for the trip."
+        tests:
+          - not_null
       - name: mta_tax
         description: "MTA tax for the trip."
+        tests:
+          - not_null
       - name: tip_amount
         description: "Tip amount for the trip."
+        tests:
+          - not_null
       - name: tolls_amount
         description: "Tolls amount for the trip."
+        tests:
+          - not_null
       - name: improvement_surcharge
         description: "Improvement surcharge for the trip."
+        tests:
+          - not_null
       - name: total_amount
         description: "Total amount for the trip."
+        tests:
+          - not_null

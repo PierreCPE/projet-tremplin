@@ -6,37 +6,75 @@ models:
     columns:
       - name: tpep_pickup_datetime
         description: "Date and time when the passenger was picked up."
+        tests:
+          - not_null
       - name: tpep_dropoff_datetime
         description: "Date and time when the passenger was dropped off."
+        tests:
+          - not_null
       - name: PULocationID
         description: "ID of the pickup location."
+        tests:
+          - not_null
       - name: DOLocationID
         description: "ID of the dropoff location."
+        tests:
+          - not_null
       - name: trip_distance
         description: "Distance of the trip in miles."
+        tests:
+          - not_null
       - name: fare_amount
         description: "Fare amount for the trip."
+        tests:
+          - not_null
       - name: tip_amount
         description: "Tip amount for the trip."
+        tests:
+          - not_null
       - name: total_amount
         description: "Total amount for the trip."
+        tests:
+          - not_null
       - name: payment_type
         description: "Payment method used for the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
 
   - name: fct_yellow_taxi_payment_summary
     description: "This model is a fact table containing the payment summary information for yellow taxi trips."
     columns:
       - name: payment_type
         description: "Payment method used for the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
       - name: payment_type_name
         description: "Name of the payment method used for the trip."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Credit Card', 'Cash', 'No Charge', 'Dispute', 'Unknown', 'Other']
       - name: total_trips
         description: "Total number of trips."
+        tests:
+          - not_null
       - name: total_revenue_with_tips
         description: "Total revenue including tips."
+        tests:
+          - not_null
       - name: total_revenue_without_tips
         description: "Total revenue excluding tips."
+        tests:
+          - not_null
       - name: avg_fare_with_tips
         description: "Average fare including tips."
+        tests:
+          - not_null
       - name: avg_fare_without_tips
         description: "Average fare excluding tips."
+        tests:
+          - not_null

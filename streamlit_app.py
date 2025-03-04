@@ -340,10 +340,10 @@ elif selected_analysis == "Étude temporelle":
     # Comparaison avant/après COVID
     df["pre_covid"] = df["date"] < pd.to_datetime("2020-03-01")
     df_covid_trend = df.groupby(["pre_covid"])[["cash_percentage", "card_percentage"]].mean().reset_index()
-    fig_covid = px.bar(df_covid_trend, x="pre_covid", y=["cash_percentage", "card_percentage"],
+    fig_covid = px.bar(df_covid_trend, y="pre_covid", x=["cash_percentage", "card_percentage"],
                     labels={"pre_covid": "Période", "value": "Pourcentage"},
                     title="Comparaison avant/après COVID",
-                    barmode="group", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
+                    barmode="group", orientation="h", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
     st.plotly_chart(fig_covid, use_container_width=True)
 
     # Répartition des paiements par heure
@@ -359,10 +359,10 @@ elif selected_analysis == "Étude temporelle":
     df["time_period"] = pd.cut(df["hour_of_day"], bins=[0, 6, 10, 18, 23],
                             labels=["Nuit", "Matin", "Journée", "Soirée"])
     df_period = df.groupby("time_period")[["cash_percentage", "card_percentage"]].mean().reset_index()
-    fig_period = px.bar(df_period, x="time_period", y=["cash_percentage", "card_percentage"],
+    fig_period = px.bar(df_period, y="time_period", x=["cash_percentage", "card_percentage"],
                         labels={"time_period": "Période", "value": "Pourcentage"},
                         title="Comparaison des paiements selon la période de la journée",
-                        barmode="group", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
+                        barmode="group", orientation="h", color_discrete_map={"cash_percentage": "#FF9810", "card_percentage": "#28C6FF"})
     st.plotly_chart(fig_period, use_container_width=True)
 
     # Impact des événements (jours fériés)

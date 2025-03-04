@@ -5,6 +5,7 @@ import altair as alt
 import matplotlib.colors as mcolors
 import folium
 from streamlit_folium import folium_static
+from folium.plugins import HeatMap
 from google.oauth2 import service_account
 from pandas_gbq import read_gbq
 import json
@@ -16,7 +17,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from shapely.geometry import shape
 from streamlit_folium import st_folium
-
+import colorsys
+from streamlit_option_menu import option_menu
 
 st.set_page_config(
     page_title="Étude des paiements Taxi NYC",
@@ -423,16 +425,6 @@ elif selected_analysis == "Étude géographique":
 
     client = bigquery.Client(credentials=credentials)
 
-    # @st.cache_data
-    # def load_shapefile():
-    #     shapefile_path = "../data_geo/ZillowNeighborhoods-NY.shp"
-    #     return gpd.read_file(shapefile_path)
-
-    # gdf = load_shapefile()
-
-    # # Filtrer uniquement les zones de la ville de New York
-    # gdf = gdf[gdf["City"] == "New York"]
-
     if "event_data" not in st.session_state:
         st.session_state.event_data = None
 
@@ -474,13 +466,14 @@ elif selected_analysis == "Étude géographique":
             f.payment_type,
             COUNT(*) AS trip_count,
             ROUND(AVG(f.total_amount), 2) AS avg_fare,
-            ROUND(AVG(f.tip_amount), 2) AS avg_tip
+            ROUND(AVG(f.tip_amount), 2) AS avg_tip,
+            ROUND(AVG(f.trip_distance), 2) AS avg_distance,
+            ROUND(AVG(f.fare_amount), 2) AS avg_fare_amount
         FROM `projet-tremplin-451615.dbt_pgosson.fct_yellow_taxi_payment_location` f
         JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_location` l1 ON f.PULocationID = l1.LocationID
         JOIN `projet-tremplin-451615.dbt_pgosson.dim_yellow_taxi_location` l2 ON f.DOLocationID = l2.LocationID
         GROUP BY 1, 2, 3
         ORDER BY trip_count DESC
-        
         """
         return client.query(query).to_dataframe()
 
@@ -514,16 +507,140 @@ elif selected_analysis == "Étude géographique":
     st.session_state.selected_pickup = pickup_zone
     st.session_state.selected_dropoff = dropoff_zone
 
-    # Création de la carte Folium
+    ## AFFICHAGE DE LA CARTE AVEC FOLIUM :
+
+    def adjust_luminosity(hex_color, factor):
+        # Convertir la couleur hexadécimale en valeurs RGB
+        r = int(hex_color[1:3], 16) / 255.0
+        g = int(hex_color[3:5], 16) / 255.0
+        b = int(hex_color[5:7], 16) / 255.0
+
+        # Convertir les valeurs RGB en valeurs HLS
+        h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+        # Ajuster la luminosité
+        l = max(0, min(1, l * factor))
+
+        # Convertir les valeurs HLS ajustées en valeurs RGB
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+
+        # Convertir les valeurs RGB en couleur hexadécimale
+        return f'#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}'
+
+    def get_color(value, max_value, color_scale):
+        intensity = value / max_value
+        factor = 0.5 + 0.5 * intensity  # Ajuste la luminosité de 0,5 à 1
+        if color_scale == "Carte":
+            base_color = "#28C6FF"
+        elif color_scale == "Cash":
+            base_color = "#FF9810"
+        else:
+            base_color = "#D8BFD8"
+        return adjust_luminosity(base_color, factor)
+
+
+
+    # Selection de carte : Vue globale, Carte, Cash
+
+    st.markdown(
+        """
+        <style>
+        .custom-select-container {
+            background-color: #000000;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .custom-select {
+            background-color: #303030;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    options = ["Vue globale", "Carte", "Cash"]
+    option_dict = {
+        "Vue globale": "🌍 Vue globale",
+        "Carte": "💳 Carte",
+        "Cash": "💵 Cash"
+    }
+
+    # Display the custom select box
+    st.markdown('<div class="custom-select-container">', unsafe_allow_html=True)
+    display_mode = st.selectbox("Vue de la carte :", options, format_func=lambda x: option_dict[x], key="display_mode", label_visibility="visible")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    def get_tooltip(zone_name, zone_count, display_mode, card_payments, cash_payments):
+        if display_mode == "Vue globale":
+            tooltip_text = f"{zone_name}: {zone_count} trajets"
+        elif display_mode == "Carte":
+            card_count = card_payments.get(zone_name, 0)
+            tooltip_text = f"{zone_name}: {card_count} trajets (Carte)"
+        elif display_mode == "Cash":
+            cash_count = cash_payments.get(zone_name, 0)
+            tooltip_text = f"{zone_name}: {cash_count} trajets (Cash)"
+        else:
+            tooltip_text = zone_name
+
+        return folium.Tooltip(f'<div style="font-size: 16px;">{tooltip_text}</div>')
+        
+
+
     m = folium.Map(location=[40.7128, -74.0060], zoom_start=10, control_scale=True)
 
+    payment_data = df_taxi
+    zone_counts = payment_data.groupby("pickup_zone")["trip_count"].sum().to_dict()
+
+    # Somme des trajets par zone et type de paiement
+    card_payments = payment_data[payment_data["payment_type"] == 1].groupby("pickup_zone")["trip_count"].sum().to_dict()
+    cash_payments = payment_data[payment_data["payment_type"] == 2].groupby("pickup_zone")["trip_count"].sum().to_dict()
+
+    # Moyenne des trajets par zone et type de paiement
+    mean_card_payments = payment_data[payment_data["payment_type"] == 1].groupby("pickup_zone")["trip_count"].mean().to_dict()
+    mean_cash_payments = payment_data[payment_data["payment_type"] == 2].groupby("pickup_zone")["trip_count"].mean().to_dict()
+
+    max_card_count = max(card_payments.values(), default=1)
+    max_cash_count = max(cash_payments.values(), default=1)
+
+    total_card_trips = sum(card_payments.values())
+    total_cash_trips = sum(cash_payments.values())
+
+    # st.write("Total des trajets en Carte:", int(total_card_trips))
+    # st.write("Total des trajets en Cash:", int(total_cash_trips))    
+
     for _, row in gdf.iterrows():
+        zone_name = row['zone']
+        zone_count = zone_counts.get(zone_name, 0)
+        
+        if display_mode == "Carte":
+            value = mean_card_payments.get(zone_name, 0)
+            max_value = max_card_count
+        elif display_mode == "Cash":
+            value = mean_cash_payments.get(zone_name, 0)
+            max_value = max_cash_count
+        else:
+            value = zone_count
+            max_value = max(zone_counts.values(), default=1)
+            
+        color = get_color(zone_count, max_value, display_mode) if display_mode != "Vue globale" else "#D8BFD8"
+        tooltip = get_tooltip(zone_name, zone_count, display_mode, card_payments, cash_payments)
+        
+        if zone_name == st.session_state.selected_pickup:
+            color = "green"
+        elif zone_name == st.session_state.selected_dropoff:
+            color = "red"
+
         folium.GeoJson(
             row['geometry'],
             name=row['zone'],
-            tooltip=row['zone'],
-            style_function=lambda x, row=row: {
-                'fillColor': 'green' if row['zone'] == st.session_state.selected_pickup else 'red' if row['zone'] == st.session_state.selected_dropoff else 'blue',
+            tooltip=tooltip,
+            style_function=lambda x, color=color: {
+                'fillColor': color,
                 'color': 'black',
                 'weight': 1,
                 'fillOpacity': 0.5
@@ -535,17 +652,13 @@ elif selected_analysis == "Étude géographique":
 
     folium_static(m, width=1400, height=600)
 
-    st.write(f"**Pickup sélectionné** : {st.session_state.selected_pickup}")
-    st.write(f"**Dropoff sélectionné** : {st.session_state.selected_dropoff}")
+
+
 
     # Filtrer les flux de paiement pour les zones sélectionnées
     filtered_df = df_taxi[
         (df_taxi["pickup_zone"] == pickup_zone) & (df_taxi["dropoff_zone"] == dropoff_zone)
     ]
-
-    # # Fusion des données de géométrie
-    # gdf = gdf.merge(df_taxi.groupby("pickup_zone")["trip_count"].sum().reset_index(), 
-    #                 left_on="Name", right_on="pickup_zone", how="left")
 
 
 
@@ -564,30 +677,44 @@ elif selected_analysis == "Étude géographique":
         # Appliquer le mapping aux types de paiement
         filtered_df['payment_type_name'] = filtered_df['payment_type'].map(payment_type_mapping)
 
-
-      # Ajouter du padding entre la carte et le graphique circulaire
+        # Ajouter du padding entre la carte et le graphique circulaire
         st.write("")
         st.write("")
 
         cols = st.columns([1, 1])
 
-    color_sequence = ["#28C6FF", "#FF9810", "#FFD700", "#FF4500", "#808080"]
+        color_sequence = ["#28C6FF", "#FF9810", "#FFD700", "#FF4500", "#808080"]
 
+        with cols[0]:
+            payment_type = df_taxi["payment_type"].unique()
+            
+            fig = px.pie(filtered_df, values='trip_count', names='payment_type_name',
+                        title=f'Répartition des paiements entre {pickup_zone} et {dropoff_zone}',
+                        height=300, width=200, color_discrete_sequence=color_sequence)
+            fig.update_layout(margin=dict(l=20, r=20, t=30, b=0))
+            st.plotly_chart(fig, use_container_width=True)
 
-    with cols[0]:
-        payment_type = df_taxi["payment_type"].unique()
+        with cols[1]:
+            st.write("💰 Moyenne des paiements par type :")
+            st.dataframe(filtered_df[["payment_type_name", "avg_fare", "avg_tip"]])
+
+        # Analyse du mode de paiement en fonction de la distance et du tarif
+        st.subheader("Analyse des paiements en fonction de la distance et du tarif")
+        st.write("Répartition des types de paiement selon la distance et le tarif:")
+        filtered_df["distance_range"] = pd.qcut(filtered_df["avg_distance"], q=4, labels=["courte", "moyenne", "longue", "très longue"])
+        filtered_df["fare_range"] = pd.qcut(filtered_df["avg_fare_amount"], q=4, labels=["bas", "moyen", "élevé", "très élevé"])
+        payment_type_counts = filtered_df.groupby(["distance_range", "fare_range", "payment_type"]).size().unstack(fill_value=0)
+        payment_type_counts.columns = payment_type_counts.columns.map(payment_type_mapping)
+        st.write(payment_type_counts)
+    else:
+        st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-box" style="background-color: #303030;">
+                <div class="kpi-label" style="color: white;">❔ Aucune donnée à analyser pour ces zones.</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        fig = px.pie(filtered_df, values='trip_count', names='payment_type_name',
-                     title=f'Répartition des paiements entre {pickup_zone} et {dropoff_zone}',
-                     height=300, width=200, color_discrete_sequence=color_sequence)
-        fig.update_layout(margin=dict(l=20, r=20, t=30, b=0))
-        st.plotly_chart(fig, use_container_width=True)
-
-    with cols[1]:
-        st.write("💰 Moyenne des paiements par type :")
-        st.dataframe(filtered_df[["payment_type_name", "avg_fare", "avg_tip"]])
-
-
 
     # Graphique pour les zones de service "Airports" et "EWR"
     st.write("✈️ **Comparaison des paiements : Aéroports vs Autres zones**")
@@ -616,6 +743,15 @@ elif selected_analysis == "Étude géographique":
 
     df_comparison = fetch_payment_comparison()
 
+        # Mapping des types de paiement
+    payment_type_mapping = {
+            1: 'Credit card',
+            2: 'Cash',
+            3: 'No charge',
+            4: 'Dispute',
+            5: 'Unknown'
+        }
+
     df_comparison["payment_type_name"] = df_comparison["payment_type"].map(payment_type_mapping)
 
     # Séparer les données en deux groupes
@@ -624,6 +760,8 @@ elif selected_analysis == "Étude géographique":
 
     # 📊 Graphiques circulaires pour la répartition des paiements
     cols = st.columns(2)
+
+    color_sequence = ["#28C6FF", "#FF9810", "#FFD700", "#FF4500", "#808080"]
 
     with cols[0]:
         st.write("💳 **Répartition des paiements - Aéroports**")

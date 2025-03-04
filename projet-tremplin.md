@@ -6,6 +6,7 @@ Ce projet vise à analyser les différents types de paiement utilisés dans les 
 ## Outils Utilisés
 - **DBT Cloud** : Pour la transformation des données.
 - **BigQuery** : Pour le stockage et l'interrogation des données.
+- **Streamlit** : Pour la visualisation des données.
 
 ## Objectifs
 1. Vue globale des types de paiements:
@@ -20,8 +21,7 @@ Ce projet vise à analyser les différents types de paiement utilisés dans les 
 4. Aller plus loin:
     * ML pour prédiction si trajet en cash ou carte
     * Voir outlier pour trajet de carte en cash
-    * Covid ?
-
+    * Impact du Covid ?
 
 ## Description des Données
 Datas dans bigquery.
@@ -45,7 +45,7 @@ Les données utilisées pour cette analyse proviennent de la table `yellow_trip_
 - **tolls_amount** : Montant total de tous les péages payés pendant le trajet.
 - **improvement_surcharge** : Surtaxe d'amélioration de 0,30 $ appliquée aux trajets au moment du déclenchement du compteur. La surtaxe d'amélioration a commencé à être perçue en 2015.
 - **total_amount** : Le montant total facturé aux passagers. N'inclut pas les pourboires en espèces.
-- **congestion_surchage** : Le montant ajouté au prix pour congestion de traffic
+- **congestion_surchage** : Le montant ajouté au prix pour congestion de traffic.
 
 Il existe également une table `taxi_zone_lookup`
 La colonne `service_zone` dans la table `taxi_zone_lookup` du dataset des taxis new yorkais indique la zone de service où se trouve la zone de taxi. 
@@ -69,7 +69,7 @@ avec comme colonnes:
 1. **Extraction des Données** : Importer les données de BigQuery dans DBT Cloud.
 2. **Transformation des Données** :
     - **Bronze Layer** : Importer les données brutes de chaque mois.
-    - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle. Suppression des valeurs nulles dans la table aggrégé.
+    - **Silver Layer** : Nettoyer et enrichir les données, ajouter une colonne `trip_id` unique et non nulle. Suppression des valeurs nulles dans la table agrégée.
     - **Gold Layer** : Agréger les données par type de paiement et calculer les métriques.
 3. **Analyse des Données** :
     - **fct_payment_summary** : Résumé des types de paiements, incluant le nombre de trajets et le montant total par type de paiement.

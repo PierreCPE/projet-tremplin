@@ -49,6 +49,7 @@ models:
                 - 4
                 - 5
                 - 6
+              quote: false
       - name: fare_amount
         description: "Fare amount for the trip."
         tests:

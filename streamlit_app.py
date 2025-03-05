@@ -160,7 +160,7 @@ if selected_analysis == "Étude globale":
     df = fetch_taxi_summary_data()
 
     # Disposition des KPI en ligne
-    st.header("🚀 Indicateurs Clés de Performance (KPI)")
+    st.header("🚀 Indicateurs Clés de Performance (KPI) de Janvier 2019 à Juin 2020")
     st.markdown(f"""
         <div class="kpi-container">
             <div class="kpi-box">
@@ -795,5 +795,6 @@ elif selected_analysis == "Étude géographique":
 with st.expander('ℹ️ À propos', expanded=True):
     st.write('''
     - **Données :** [Kaggle NYC taxi Dataset](https://www.kaggle.com/datasets/microize/newyork-yellow-taxi-trip-data-2020-2019)
+             et [Kaggle NYC taxi zones](https://www.kaggle.com/datasets/mxruedag/tlc-nyc-taxi-zones?select=taxi_zones.csv)
     - **Objectif :** Analyse des types de paiement utilisés par les passagers des taxis de New York.
     ''')

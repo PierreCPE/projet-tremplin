@@ -529,7 +529,7 @@ elif selected_analysis == "Étude géographique":
 
     def get_color(value, max_value, color_scale):
         intensity = value / max_value
-        factor = 0.5 + 0.5 * intensity  # Ajuste la luminosité de 0,5 à 1
+        factor = 1 - 0.8 * intensity  # Ajuste la luminosité de 0,2 à 1
         if color_scale == "Carte":
             base_color = "#28C6FF"
         elif color_scale == "Cash":

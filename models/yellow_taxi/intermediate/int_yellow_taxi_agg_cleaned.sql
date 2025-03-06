@@ -12,7 +12,7 @@ WITH filtered_data AS (
         AND RateCodeID BETWEEN 1 AND 6
         AND Payment_type BETWEEN 1 AND 5
         AND Fare_amount BETWEEN 0 AND 100
-        AND Extra IN (0.50, 1)
+        AND Extra IN (0, 0.50, 1)
         AND MTA_tax = 0.50
         AND Tip_amount BETWEEN 0 AND 1000
         AND Tolls_amount BETWEEN 0 AND 1000
